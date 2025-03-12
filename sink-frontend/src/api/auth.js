@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api/";
 
 // Create Axios instance
 const apiClient = axios.create({
@@ -13,7 +13,7 @@ const apiClient = axios.create({
 
 export const login = async (email, password) => {
    try {
-     const response = await axios.post(`${API_BASE_URL}/login`, {
+     const response = await axios.post(`${API_BASE_URL}/auth/login`, {
        email,
        password,
      });
@@ -29,7 +29,7 @@ export const refreshAccessToken = async () => {
     const refreshToken = localStorage.getItem("refreshToken");
     if (!refreshToken) throw new Error("No refresh token available");
 
-    const response = await axios.post(`${API_BASE_URL}/refresh-token`, { refreshToken });
+    const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, { refreshToken });
     const { accessToken, refreshToken: newRefreshToken } = response.data;
 
     // Store new tokens
@@ -64,6 +64,31 @@ const logoutUser = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   window.location.href = "/login"; // Redirect to login
+};
+
+// Function to register user
+export const register = async (formData) => {
+  try {
+      const response = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+          return { 
+              success: false, 
+              errors: data.errors || ["Registration failed"],
+              message: data.message || "Registration failed"
+          };
+      }
+
+      return { success: true, message: "Registration successful" };
+  } catch (error) {
+      return { success: false, errors: ["Network error. Please try again."] };
+  }
 };
 
 export default apiClient;
