@@ -1,0 +1,6 @@
+<configuration>
+    <logger name="org.johndoe.kitchensink" level="OFF"/>
+    <root level="ERROR">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

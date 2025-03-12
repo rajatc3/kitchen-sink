@@ -1,0 +1,103 @@
+{
+  "id": "kitchensink",
+  "realm": "kitchensink",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "kitchensink-client",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://localhost:8081/login/oauth2/code/keycloak"
+      ],
+      "webOrigins": [
+        "*"
+      ],
+      "rootUrl": "http://localhost:8081",
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "fullScopeAllowed": true,
+      "authorizationServicesEnabled": true,
+      "defaultClientScopes": [
+        "email",
+        "profile",
+        "roles"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone"
+      ],
+      "protocolMappers": [
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "username",
+            "claim.name": "preferred_username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "email",
+            "claim.name": "email",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ],
+      "secret": "MrUlon9BCLHlMRS4fvMQB5pwXw7Mqwvo"
+    }
+  ],
+  "users": [
+    {
+      "username": "john.doe",
+      "enabled": true,
+      "email": "john.doe@email.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin"
+        }
+      ],
+      "realmRoles": ["admin"]
+    },
+    {
+      "username": "jane.doe",
+      "enabled": true,
+      "email": "jane.doe@email.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "user"
+        }
+      ],
+      "realmRoles": ["user"]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Administrator Role with full access"
+      },
+      {
+        "name": "user",
+        "description": "User Role with read-only access"
+      }
+    ]
+  }
+}
