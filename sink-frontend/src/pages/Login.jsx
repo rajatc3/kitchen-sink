@@ -16,7 +16,7 @@ const Login = () => {
 
       // Check if input looks like an email
       if (!identifier.trim()) {
-         setIdentifierError("Email is required");
+         setIdentifierError("Email or Username is required");
          isValid = false;
       } else {
          // Check if input looks like an email
