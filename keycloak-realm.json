@@ -6,8 +6,8 @@
     "host": "smtp.gmail.com",
     "port": "465",
     "from": "kitchensink-admin",
-    "user": "rajat4redmi@gmail.com",
-    "password": "mongoTest@123",
+    "user": "xx@yy.com",
+    "password": "test@123",
     "auth": "true",
     "ssl": "true"
   },
