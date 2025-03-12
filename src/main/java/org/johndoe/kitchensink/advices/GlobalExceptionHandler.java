@@ -1,5 +1,6 @@
 package org.johndoe.kitchensink.advices;
 
+import org.johndoe.kitchensink.exceptions.ApplicationException;
 import org.johndoe.kitchensink.exceptions.UserNotFoundException;
 import org.johndoe.kitchensink.exceptions.ValidationException;
 import org.slf4j.Logger;
@@ -92,6 +93,20 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles ApplicationException and returns an INTERNAL_SERVER_ERROR response.
+     * These exceptions are thrown when we need to show internal error to the user and not a static something went wrong message.
+     *
+     * @param ex the ApplicationException
+     * @return a ResponseEntity containing the error message and INTERNAL_SERVER_ERROR status
+     */
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<Map<String, Object>> handleApplicationException(ApplicationException ex) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        logger.error("Application Exception occurred: ", ex);
+        return getErrorResponse(ex.getMessage(), status);
+    }
+
+    /**
      * Handles ValidationException and returns a BAD_REQUEST response.
      *
      * @param ex the ValidationException
@@ -122,7 +137,7 @@ public class GlobalExceptionHandler {
                 .getAllErrors()
                 .stream()
                 .map(error -> error.getDefaultMessage())
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet()).stream().toList();
 
         return getErrorResponse(errors, status);
     }

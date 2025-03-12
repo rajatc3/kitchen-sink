@@ -83,7 +83,7 @@ public class MemberController {
      * @return a ResponseEntity containing the member with the given name
      */
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    @GetMapping(value = "/name/{name}", produces = "application/json")
+    @GetMapping(value = "/username/{name}", produces = "application/json")
     public ResponseEntity<Object> getMembersByName(@PathVariable("name") String name) {
         return ResponseEntity.ok(service.findMemberByName(name));
     }

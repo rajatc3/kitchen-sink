@@ -3,11 +3,18 @@ package org.johndoe.kitchensink.dtos;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.johndoe.kitchensink.annotations.NotBlankCharArray;
+import org.johndoe.kitchensink.annotations.UniqueInDatabase;
+import org.johndoe.kitchensink.annotations.UniqueUsername;
 import org.johndoe.kitchensink.documents.Member;
 
 /**
  * Data Transfer Object for Member.
  */
+@Data
+@NoArgsConstructor
 public class MemberDto {
 
     /**
@@ -19,124 +26,65 @@ public class MemberDto {
      * The name of the member.
      * Must be between 3 and 50 characters.
      */
-    @NotBlank(message = "Name is mandatory")
-    @Size(min = 3, max = 50, message = "Name must be between 3 and 50 characters")
-    private String name;
+    @NotBlank(message = "Username is mandatory")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    @UniqueUsername
+    private String username;
+
+    @NotBlank(message = "First Name is mandatory")
+    private String firstName;
+
+    @NotBlank(message = "Last Name is mandatory")
+    private String lastName;
 
     /**
      * The email address of the member.
      * Must be a valid email format.
      */
     @Pattern(
-            regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+            regexp = "^(?!.*\\.\\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.(com|net|org|edu|gov|mil|info|co|io|biz|in|us|uk|ca|au|de|fr|jp|cn|br|za|ru|eu|[a-zA-Z]{2,})$",
             message = "Email should be valid"
     )
     @NotBlank(message = "Email is mandatory")
+    @UniqueInDatabase
     private String email;
 
     /**
      * The phone number of the member.
-     * Must be 10-13 digits and can optionally start with +.
+     * Must be a valid 10 digit Indian number without country code.
      */
     @NotBlank(message = "Phone number is mandatory")
     @Pattern(
-            regexp = "^\\+?[0-9]{10,13}$",
-            message = "Phone number must be 10-13 digits and can optionally start with +"
+            regexp = "^[6789]\\d{9}$",
+            message = "Phone number must be valid 10 digit indian number without country code"
     )
+    @UniqueInDatabase
     private String phoneNumber;
 
     /**
-     * Constructs a MemberDto with the specified details.
-     *
-     * @param memberId    the unique identifier for the member
-     * @param name        the name of the member
-     * @param email       the email address of the member
-     * @param phoneNumber the phone number of the member
+     * The password of the member.
      */
-    public MemberDto(Long memberId, String name, String email, String phoneNumber) {
-        this.memberId = memberId;
-        this.name = name;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-    }
+    @NotBlankCharArray(message = "Password is mandatory")
+    private char[] password;
+
+    /**
+     * The repeated password of the member.
+     */
+    @NotBlankCharArray(message = "Password is mandatory")
+    private char[] repeatPassword;
 
     /**
      * Default constructor for MemberDto.
      */
-    public MemberDto() {
-    }
-
-    /**
-     * Gets the unique identifier for the member.
-     *
-     * @return the member ID
-     */
-    public Long getMemberId() {
-        return memberId;
-    }
-
-    /**
-     * Sets the unique identifier for the member.
-     *
-     * @param memberId the member ID to set
-     */
-    public void setMemberId(Long memberId) {
+    public MemberDto(Long memberId, String username, String firstName, String lastName, String email, String phoneNumber) {
         this.memberId = memberId;
-    }
-
-    /**
-     * Gets the name of the member.
-     *
-     * @return the name of the member
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Sets the name of the member.
-     *
-     * @param name the name to set
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * Gets the email address of the member.
-     *
-     * @return the email address of the member
-     */
-    public String getEmail() {
-        return email;
-    }
-
-    /**
-     * Sets the email address of the member.
-     *
-     * @param email the email address to set
-     */
-    public void setEmail(String email) {
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
-    }
-
-    /**
-     * Gets the phone number of the member.
-     *
-     * @return the phone number of the member
-     */
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    /**
-     * Sets the phone number of the member.
-     *
-     * @param phoneNumber the phone number to set
-     */
-    public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
 
     /**
      * Mapper class for converting between MemberDto and Member entities.
@@ -161,7 +109,9 @@ public class MemberDto {
             }
             return new Member(
                     dto.getMemberId(),
-                    dto.getName(),
+                    dto.getUsername(),
+                    dto.getFirstName(),
+                    dto.getLastName(),
                     dto.getEmail(),
                     dto.getPhoneNumber()
             );
@@ -179,7 +129,9 @@ public class MemberDto {
             }
             return new MemberDto(
                     member.getMemberId(),
-                    member.getName(),
+                    member.getUsername(),
+                    member.getFirstName(),
+                    member.getLastName(),
                     member.getEmail(),
                     member.getPhoneNumber()
             );

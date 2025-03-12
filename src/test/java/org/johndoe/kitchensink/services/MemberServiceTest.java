@@ -33,7 +33,7 @@ public class MemberServiceTest {
 
     @BeforeEach
     public void setUp() {
-        memberDto = new MemberDto(1L, "John Doe", "john@example.com", "1234567890");
+        memberDto = new MemberDto(1L, "john.doe", "John", "Doe", "john@example.com", "1234567890");
         member = toEntity(memberDto);
     }
 
@@ -42,7 +42,7 @@ public class MemberServiceTest {
         when(memberRepository.findByMemberId(1L)).thenReturn(Optional.of(member));
         MemberDto result = memberService.findMemberById(1L);
         assertNotNull(result);
-        assertEquals("John Doe", result.getName());
+        assertEquals("John Doe", result.getFirstName() + " " + result.getLastName());
     }
 
     @Test
@@ -57,7 +57,7 @@ public class MemberServiceTest {
         when(memberRepository.save(any())).thenReturn(member);
         MemberDto result = memberService.createMember(memberDto);
         assertNotNull(result);
-        assertEquals("John Doe", result.getName());
+        assertEquals("John Doe", result.getFirstName() + " " + result.getLastName());
     }
 
     @Test
@@ -73,9 +73,9 @@ public class MemberServiceTest {
         when(memberRepository.findByEmailOrPhoneNumberAndIdNot(any(), any(), anyLong())).thenReturn(Optional.empty());
         when(memberRepository.findByMemberId(1L)).thenReturn(Optional.of(member));
         when(memberRepository.save(any())).thenReturn(member);
-        MemberDto updatedMember = new MemberDto(1L, "Jane Doe", "jane@example.com", "0987654321");
+        MemberDto updatedMember = new MemberDto(1L, "jane.doe", "Jane", "Doe", "jane@example.com", "0987654321");
         MemberDto result = memberService.updateMember(1L, updatedMember);
-        assertEquals("Jane Doe", result.getName());
+        assertEquals("Jane Doe", result.getFirstName() + " " + result.getLastName());
     }
 
     @Test

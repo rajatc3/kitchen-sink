@@ -4,6 +4,7 @@ import org.johndoe.kitchensink.documents.Member;
 import org.johndoe.kitchensink.repositories.MemberRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -29,10 +30,11 @@ public class DataSeeder implements CommandLineRunner {
     /**
      * Flag to indicate if the database should be refreshed.
      */
+    @Value("${app.refresh.database}")
     private boolean refreshDatabase;
 
     /**
-     * Constructor for DataSeeder.
+     * Constructor for er.
      *
      * @param memberRepository the member repository
      */
@@ -66,15 +68,15 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         List<Member> members = List.of(
-                new Member(1L, "John Doe", "john.doe@email.com", "1234567890"),
-                new Member(2L, "Jane Doe", "jane.doe@email.com", "0987654321")
+                new Member(1L, "john.doe", "John", "Doe", "john.doe@email.com", "9876543210"),
+                new Member(2L, "jane.doe", "Jane", "Doe", "jane.doe@email.com", "8976543210")
         );
 
         members.forEach(member -> memberRepository.findByMemberId(member.getMemberId())
                 .ifPresentOrElse(
-                        existingMember -> log.info("Member already exists, skipping: {}", member.getName()),
+                        existingMember -> log.info("Member already exists, skipping: {}", member.getUsername()),
                         () -> {
-                            log.info("Inserting member: {}", member.getName());
+                            log.info("Inserting member: {}", member.getUsername());
                             memberRepository.save(member);
                         }
                 ));

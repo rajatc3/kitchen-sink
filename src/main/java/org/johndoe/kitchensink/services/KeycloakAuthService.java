@@ -1,20 +1,25 @@
 package org.johndoe.kitchensink.services;
 
-import org.johndoe.kitchensink.dtos.AuthRequest;
-import org.johndoe.kitchensink.dtos.AuthResponse;
-import org.johndoe.kitchensink.dtos.RefreshTokenResponse;
+import lombok.Data;
+import org.johndoe.kitchensink.dtos.*;
+import org.johndoe.kitchensink.exceptions.ApplicationException;
 import org.johndoe.kitchensink.security.config.JwtAuthConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 /**
  * Service for handling authentication with Keycloak.
  */
+@Data
 @Service
 public class KeycloakAuthService {
 
@@ -29,16 +34,35 @@ public class KeycloakAuthService {
     private final JwtAuthConverter jwt;
 
     /**
+     * Master client ID for Keycloak.
+     */
+    private static final String MASTER_CLIENTID = "admin-cli";
+
+    /**
      * Keycloak URL.
      */
     @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}")
     private String keycloakUrl;
+    /**
+     * MemberService for creating members.
+     */
+    private MemberService memberService;
 
     /**
      * Client ID for Keycloak.
      */
     @Value("${spring.security.oauth2.client.registration.keycloak.client-id}")
     private String clientId;
+    /**
+     * Keycloak base URL.
+     */
+    @Value("${keycloak.base-url}")
+    private String keycloakBaseUrl;
+    /**
+     * Authorization grant type for Keycloak.
+     */
+    @Value("${spring.security.oauth2.client.registration.keycloak.authorization-grant-type}")
+    private String grantType;
 
     /**
      * Client secret for Keycloak.
@@ -47,14 +71,16 @@ public class KeycloakAuthService {
     private String clientSecret;
 
     /**
-     * Constructs a new KeycloakAuthService with the given WebClient builder and JwtAuthConverter.
+     * Constructs a KeycloakAuthService with the given WebClient, JwtAuthConverter, and MemberService.
      *
-     * @param webClientBuilder the WebClient builder
-     * @param jwt              the JwtAuthConverter
+     * @param webClientBuilder the WebClient.Builder to use for creating a WebClient
+     * @param jwt the JwtAuthConverter to use for converting JWT tokens
+     * @param memberService the MemberService to use for creating members
      */
-    public KeycloakAuthService(WebClient.Builder webClientBuilder, JwtAuthConverter jwt) {
+    public KeycloakAuthService(WebClient.Builder webClientBuilder, JwtAuthConverter jwt, MemberService memberService) {
         this.webClient = webClientBuilder.build();
         this.jwt = jwt;
+        this.memberService = memberService;
     }
 
     /**
@@ -69,7 +95,7 @@ public class KeycloakAuthService {
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .bodyValue("client_id=" + clientId +
                         "&client_secret=" + clientSecret +
-                        "&grant_type=password" +
+                        "&grant_type==" + grantType +
                         "&username=" + request.email() +
                         "&password=" + request.password())
                 .retrieve()
@@ -111,50 +137,65 @@ public class KeycloakAuthService {
                 ));
     }
 
-    /**
-     * Represents a response from Keycloak containing tokens.
-     *
-     * @param access_token  the access token
-     * @param refresh_token the refresh token
-     * @param expires_in    the expiration time of the token
-     * @param token_type    the type of the token
-     */
-    record KeycloakTokenResponse(String access_token, String refresh_token, String expires_in,
-                                         String token_type) {
-        /**
-         * Gets the access token.
-         *
-         * @return the access token
-         */
-        public String accessToken() {
-            return access_token;
+    public Mono<Void> register(MemberDto request) {
+        String password = String.copyValueOf(request.getPassword());
+
+        String token = getAdminToken().block();
+        if (token == null) {
+            throw new RuntimeException("Failed to fetch admin token");
         }
 
-        /**
-         * Gets the refresh token.
-         *
-         * @return the refresh token
-         */
-        public String refreshToken() {
-            return refresh_token;
-        }
+        webClient.post()
+                .uri(keycloakBaseUrl + "/admin/realms/{realm}/users", "kitchensink")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .bodyValue(Map.of(
+                        "username", request.getUsername(),
+                        "firstName", request.getFirstName(),
+                        "lastName", request.getLastName(),
+                        "email", request.getEmail(),
+                        "enabled", true,
+                        "credentials", new Object[]{
+                                Map.of(
+                                        "type", grantType,
+                                        "value", password,
+                                        "temporary", false
+                                )
+                        }
+                ))
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response -> {
+                    if (response.statusCode() == HttpStatus.CONFLICT) {
+                        return Mono.error(new ApplicationException("User already exists!!"));
+                    }
+                    return Mono.error(new ApplicationException("Keycloak client error: " + response.statusCode()));
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, response ->
+                        Mono.error(new ApplicationException("Keycloak server error: " + response.statusCode()))
+                )
+                .toBodilessEntity()
+                .block();
 
-        /**
-         * Gets the expiration time of the token.
-         *
-         * @return the expiration time of the token
-         */
-        public String expiresIn() {
-            return expires_in;
-        }
+        memberService.createMember(request);
+        // TODO Handle Partial Failures (Consistency Between Keycloak and Database) - Catch the exception and call a delete user API. TOBE Picked in future.
 
-        /**
-         * Gets the type of the token.
-         *
-         * @return the type of the token
-         */
-        public String tokenType() {
-            return token_type;
-        }
+        return Mono.empty();
     }
+
+    private Mono<String> getAdminToken() {
+        //TODO Admin credentials are currently hard-coded - TOBE handled more securely in future using either .env file or External Password Manager like HashiCorp Vault.
+        return webClient.post()
+                .uri(keycloakBaseUrl + "/realms/{realm}/protocol/openid-connect/token", "master")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .bodyValue("grant_type=" + grantType + "&client_id=" + MASTER_CLIENTID +
+                        //"&client_secret=" + clientSecret +
+                        "&username=" + "admin" +
+                        "&password=" + "admin123")
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(response -> (String) response.get("access_token"))
+                .switchIfEmpty(Mono.error(new RuntimeException("Failed to get Admin Token from Keycloak")));
+
+    }
+
 }

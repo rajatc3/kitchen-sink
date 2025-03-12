@@ -47,10 +47,10 @@ public interface MemberRepository extends MongoRepository<Member, Long> {
     /**
      * Finds a member by their name.
      *
-     * @param name the name
+     * @param username the name
      * @return an Optional containing the found member, or empty if not found
      */
-    Optional<Member> findByName(String name);
+    Optional<Member> findByUsername(String username);
 
     /**
      * Deletes a member by their member ID.

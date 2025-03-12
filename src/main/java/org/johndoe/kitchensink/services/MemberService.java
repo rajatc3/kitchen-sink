@@ -139,14 +139,14 @@ public class MemberService {
     }
 
     /**
-     * Finds a member by their name.
+     * Finds a member by their username.
      *
-     * @param name the name
+     * @param name the username of the user
      * @return the member DTO
      * @throws UserNotFoundException if the member is not found
      */
     public MemberDto findMemberByName(String name) {
-        return fromEntity(memberRepository.findByName(name).orElseThrow(() -> new UserNotFoundException(MEMBER_NOT_FOUND)));
+        return fromEntity(memberRepository.findByUsername(name).orElseThrow(() -> new UserNotFoundException(MEMBER_NOT_FOUND)));
     }
 
     /**
@@ -167,8 +167,11 @@ public class MemberService {
         }
 
         Member memberEntity = memberRepository.findByMemberId(id).orElseThrow(() -> new UserNotFoundException(MEMBER_NOT_FOUND));
-        if (member.getName() != null) {
-            memberEntity.setName(member.getName());
+        if (member.getFirstName() != null) {
+            memberEntity.setFirstName(member.getFirstName());
+        }
+        if (member.getLastName() != null) {
+            memberEntity.setLastName(member.getLastName());
         }
         if (member.getEmail() != null) {
             memberEntity.setEmail(member.getEmail());
@@ -187,5 +190,17 @@ public class MemberService {
      */
     public void deleteMember(Long id) {
         memberRepository.deleteByMemberId(id);
+    }
+
+
+    public boolean doesValueExistAsEmailOrPhoneNumber(String value) {
+        return memberRepository.findByEmail(value).isPresent() || memberRepository.findByPhoneNumber(value).isPresent();
+    }
+
+    public boolean doesValueExistsAsUsername(String value){
+        try{ findMemberByName(value);} catch (UserNotFoundException e) {
+            return false;
+        }
+        return true;
     }
 }

@@ -1,9 +1,7 @@
 package org.johndoe.kitchensink.controllers;
 
-import org.johndoe.kitchensink.dtos.AuthRequest;
-import org.johndoe.kitchensink.dtos.AuthResponse;
-import org.johndoe.kitchensink.dtos.RefreshTokenRequest;
-import org.johndoe.kitchensink.dtos.RefreshTokenResponse;
+import jakarta.validation.Valid;
+import org.johndoe.kitchensink.dtos.*;
 import org.johndoe.kitchensink.services.KeycloakAuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,12 +9,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 /**
  * AuthController handles authentication-related endpoints.
  */
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api/auth/")
 public class AuthController {
 
     /**
@@ -59,5 +58,12 @@ public class AuthController {
         return ResponseEntity
                 .ok(authService.refreshToken(request.refreshToken())
                         .block());
+    }
+
+    @PreAuthorize("permitAll()")
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@Valid @RequestBody MemberDto request) {
+        return authService.register(request)
+                .then(Mono.just(ResponseEntity.ok("User registered successfully"))).block();
     }
 }

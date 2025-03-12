@@ -15,7 +15,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -76,7 +75,9 @@ public class MemberControllerTest {
     public void testGetMemberById_Success() throws Exception {
         MemberDto mockMember = new MemberDto();
         mockMember.setMemberId(1L);
-        mockMember.setName("John Doe");
+        mockMember.setUsername("john.doe");
+        mockMember.setFirstName("John");
+        mockMember.setLastName("Doe");
         mockMember.setEmail("john.doe@example.com");
         mockMember.setPhoneNumber("123-456-7890");
 
@@ -85,7 +86,9 @@ public class MemberControllerTest {
         mockMvc.perform(get("/api/members/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.memberId").value(1))
-                .andExpect(jsonPath("$.name").value("John Doe"))
+                .andExpect(jsonPath("$.username").value("john.doe"))
+                .andExpect(jsonPath("$.firstName").value("John"))
+                .andExpect(jsonPath("$.lastName").value("Doe"))
                 .andExpect(jsonPath("$.email").value("john.doe@example.com"))
                 .andExpect(jsonPath("$.phoneNumber").value("123-456-7890"));
     }
