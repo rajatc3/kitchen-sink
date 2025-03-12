@@ -15,11 +15,17 @@ const Login = () => {
       setPasswordError("");
 
       // Check if input looks like an email
-      const isEmail = identifier.includes("@");
-
-      if (isEmail && !identifier.match(/^\S+@\S+\.\S+$/)) {
-         setIdentifierError("Invalid email format");
+      if (!identifier.trim()) {
+         setIdentifierError("Email is required");
          isValid = false;
+      } else {
+         // Check if input looks like an email
+         const isEmail = identifier.includes("@");
+   
+         if (isEmail && !identifier.match(/^\S+@\S+\.\S+$/)) {
+            setIdentifierError("Invalid email format");
+            isValid = false;
+         }
       }
 
       if (password.length < 4) {
