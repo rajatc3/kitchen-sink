@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 /**
  * AuthController handles authentication-related endpoints.
  */
@@ -62,8 +64,8 @@ public class AuthController {
 
     @PreAuthorize("permitAll()")
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody MemberDto request) {
+    public ResponseEntity<Map<String,String>> register(@Valid @RequestBody MemberDto request) {
         return authService.register(request)
-                .then(Mono.just(ResponseEntity.ok("User registered successfully"))).block();
+                .then(Mono.just(ResponseEntity.ok(Map.of("message", "User registered successfully")))).block();
     }
 }

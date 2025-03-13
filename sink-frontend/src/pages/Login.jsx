@@ -11,6 +11,33 @@ const Login = () => {
 
    const navigate = useNavigate();
 
+   const validateForm = () => {
+      let isValid = true;
+      setIdentifierError("");
+      setPasswordError("");
+
+      // Check if input looks like an email
+      if (!identifier.trim()) {
+         setIdentifierError("Email or Username is required");
+         isValid = false;
+      } else {
+         // Check if input looks like an email
+         const isEmail = identifier.includes("@");
+   
+         if (isEmail && !identifier.match(/^\S+@\S+\.\S+$/)) {
+            setIdentifierError("Invalid email format");
+            isValid = false;
+         }
+      }
+
+      if (password.length < 4) {
+         setPasswordError("Password must be longer than 4 characters");
+         isValid = false;
+      }
+
+      return isValid;
+   };
+
    const handleSubmit = async (e) => {
       e.preventDefault();
       setError("");

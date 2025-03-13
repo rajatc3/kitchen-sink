@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import Login from "./pages/Login";
 import Members from "./pages/Members";
@@ -26,7 +26,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/members" element={<Members />} />
         <Route path="/register" element={<Register />} />
-        <Route path="*" element={<Login />} /> {/* Redirect unknown routes */}
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
   );

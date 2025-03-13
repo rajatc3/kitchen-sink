@@ -4,16 +4,16 @@ import lombok.Data;
 import org.johndoe.kitchensink.dtos.*;
 import org.johndoe.kitchensink.exceptions.ApplicationException;
 import org.johndoe.kitchensink.security.config.JwtAuthConverter;
+import org.johndoe.kitchensink.utils.ApplicationConstants;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +23,7 @@ import java.util.Map;
 @Service
 public class KeycloakAuthService {
 
+    public static final String REALM_KITCHENSINK = "kitchensink";
     /**
      * WebClient for KeycloakAuthService.
      */
@@ -92,12 +93,12 @@ public class KeycloakAuthService {
     public Mono<AuthResponse> login(AuthRequest request) {
         return webClient.post()
                 .uri(keycloakUrl + "/protocol/openid-connect/token")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .bodyValue("client_id=" + clientId +
-                        "&client_secret=" + clientSecret +
-                        "&grant_type==" + grantType +
-                        "&username=" + request.email() +
-                        "&password=" + request.password())
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .body(BodyInserters.fromFormData("client_id", clientId)
+                        .with("client_secret", clientSecret)
+                        .with("grant_type", grantType)
+                        .with("username", request.email())
+                        .with("password", request.password()))
                 .retrieve()
                 .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
                         clientResponse -> clientResponse.bodyToMono(String.class)
@@ -137,19 +138,110 @@ public class KeycloakAuthService {
                 ));
     }
 
-    public Mono<Void> register(MemberDto request) {
-        String password = String.copyValueOf(request.getPassword());
+    /**
+     * Registers a user with the given member DTO.
+     *
+     * @param memberDto the member DTO
+     * @return a Mono emitting the registration response
+     */
+    public Mono<Void> register(MemberDto memberDto) {
+        String password = String.copyValueOf(memberDto.getPassword());
 
-        String token = getAdminToken().block();
-        if (token == null) {
-            throw new RuntimeException("Failed to fetch admin token");
+        String adminAccessToken = getAdminAccessToken();
+
+        createUserInKeyCloak(memberDto, adminAccessToken, password);
+
+        assignRoleToUser(memberDto, adminAccessToken, ApplicationConstants.ROLES.USER.toString());
+
+        memberService.createMember(memberDto);
+        // TODO Handle Partial Failures (Consistency Between Keycloak and Database) - Catch the exception and call a delete user API. TOBE Picked in future.
+
+        return Mono.empty();
+    }
+
+    /**
+     * Gets the admin access token.
+     *
+     * @return a Mono emitting the admin access token
+     */
+    private String getAdminAccessToken() {
+        String adminAccessToken = getAdminToken().block();
+        if (adminAccessToken == null) {
+            throw new RuntimeException("Failed to fetch admin adminAccessToken");
         }
+        return adminAccessToken;
+    }
 
-        webClient.post()
-                .uri(keycloakBaseUrl + "/admin/realms/{realm}/users", "kitchensink")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+    /**
+     * Assigns a role to a user.
+     *
+     * @param memberDto the member DTO
+     * @param adminAccessToken the admin access token
+     * @param roleToAssign the role to assign
+     */
+    private void assignRoleToUser(MemberDto memberDto, String adminAccessToken, String roleToAssign) {
+        Mono<String> userIdMono = WebClient.create()
+                .get()
+                .uri(keycloakBaseUrl + "/admin/realms/{realm}/users?email={username}", REALM_KITCHENSINK, memberDto.getEmail())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminAccessToken)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response ->
+                        Mono.error(new ApplicationException("Keycloak client error: " + response.statusCode()))
+                )
+                .onStatus(HttpStatusCode::is5xxServerError, response ->
+                        Mono.error(new ApplicationException("Keycloak server error: " + response.statusCode()))
+                )
+                .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {
+                })
+                .map(users -> {
+                            System.out.println(users.get(0).entrySet());
+                            return (String) users.get(0).get("id");
+                        }
+                );
+
+        //Blocking as this is a synchronous application
+        userIdMono.block();
+
+        userIdMono.flatMap(userId -> WebClient.create()
+                .get()
+                .uri(keycloakBaseUrl + "/admin/realms/{realm}/roles/{roleName}", REALM_KITCHENSINK, roleToAssign) // Fetch user role ID
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminAccessToken)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response ->
+                        Mono.error(new ApplicationException("Keycloak client error: " + response.statusCode()))
+                )
+                .onStatus(HttpStatusCode::is5xxServerError, response ->
+                        Mono.error(new ApplicationException("Keycloak server error: " + response.statusCode()))
+                )
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
+                })
+                .map(role -> Map.of("id", role.get("id"), "name", role.get("name")))
+                .flatMap(role -> WebClient.create()
+                        .post()
+                        .uri(keycloakBaseUrl + "/admin/realms/{realm}/users/{userId}/role-mappings/realm", REALM_KITCHENSINK, userId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminAccessToken)
+                        .body(BodyInserters.fromValue(List.of(role))) // Assign the role
+                        .retrieve()
+                        .toBodilessEntity()
+                )).subscribe();
+
+        //Blocking as this is a synchronous application
+        userIdMono.block();
+    }
+
+    /**
+     * Creates a user in Keycloak.
+     *
+     * @param request the member DTO
+     * @param adminAccessToken the admin access token
+     * @param password the password
+     */
+    private void createUserInKeyCloak(MemberDto request, String adminAccessToken, String password) {
+        Mono<ResponseEntity<Void>> createUserResponse = webClient.post()
+                .uri(keycloakBaseUrl + "/admin/realms/{realm}/users", REALM_KITCHENSINK)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminAccessToken)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .bodyValue(Map.of(
+                .body(BodyInserters.fromValue(Map.of(
                         "username", request.getUsername(),
                         "firstName", request.getFirstName(),
                         "lastName", request.getLastName(),
@@ -162,7 +254,7 @@ public class KeycloakAuthService {
                                         "temporary", false
                                 )
                         }
-                ))
+                )))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> {
                     if (response.statusCode() == HttpStatus.CONFLICT) {
@@ -173,29 +265,31 @@ public class KeycloakAuthService {
                 .onStatus(HttpStatusCode::is5xxServerError, response ->
                         Mono.error(new ApplicationException("Keycloak server error: " + response.statusCode()))
                 )
-                .toBodilessEntity()
-                .block();
+                .toBodilessEntity();
 
-        memberService.createMember(request);
-        // TODO Handle Partial Failures (Consistency Between Keycloak and Database) - Catch the exception and call a delete user API. TOBE Picked in future.
-
-        return Mono.empty();
+        //Blocking as this is a synchronous application
+        createUserResponse.block();
     }
 
+    /**
+     * Gets the admin token.
+     *
+     * @return a Mono emitting the admin token
+     */
     private Mono<String> getAdminToken() {
         //TODO Admin credentials are currently hard-coded - TOBE handled more securely in future using either .env file or External Password Manager like HashiCorp Vault.
         return webClient.post()
                 .uri(keycloakBaseUrl + "/realms/{realm}/protocol/openid-connect/token", "master")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .bodyValue("grant_type=" + grantType + "&client_id=" + MASTER_CLIENTID +
-                        //"&client_secret=" + clientSecret +
-                        "&username=" + "admin" +
-                        "&password=" + "admin123")
+                .body(BodyInserters.fromFormData("grant_type", grantType)
+                        .with("client_id", MASTER_CLIENTID)
+                        //.with("client_secret", clientSecret) // Uncomment if needed
+                        .with("username", "admin")
+                        .with("password", "admin123"))
                 .retrieve()
                 .bodyToMono(Map.class)
                 .map(response -> (String) response.get("access_token"))
                 .switchIfEmpty(Mono.error(new RuntimeException("Failed to get Admin Token from Keycloak")));
 
     }
-
 }

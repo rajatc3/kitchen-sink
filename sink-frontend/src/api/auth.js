@@ -63,13 +63,13 @@ apiClient.interceptors.request.use(
 const logoutUser = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
-  window.location.href = "/login"; // Redirect to login
+  window.location.href = "/login";
 };
 
 // Function to register user
 export const register = async (formData) => {
   try {
-      const response = await fetch("/api/register", {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
