@@ -173,12 +173,6 @@ public class MemberService {
         if (member.getLastName() != null) {
             memberEntity.setLastName(member.getLastName());
         }
-        if (member.getEmail() != null) {
-            memberEntity.setEmail(member.getEmail());
-        }
-        if (member.getPhoneNumber() != null) {
-            memberEntity.setPhoneNumber(member.getPhoneNumber());
-        }
 
         return fromEntity(memberRepository.save(memberEntity));
     }

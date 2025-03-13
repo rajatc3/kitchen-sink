@@ -90,6 +90,15 @@ public class MemberDto {
         this.userRole = userRole;
     }
 
+    /**
+     * Gets the password as a string.
+     *
+     * @return the password as a string
+     */
+    public String getPasswordAsString() {
+        return password != null ? new String(password) : null;
+    }
+
 
     /**
      * Mapper class for converting between MemberDto and Member entities.
