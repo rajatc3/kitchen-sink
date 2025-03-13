@@ -1,7 +1,9 @@
 package org.johndoe.kitchensink.config;
 
 import org.johndoe.kitchensink.documents.Member;
+import org.johndoe.kitchensink.dtos.MemberDto;
 import org.johndoe.kitchensink.repositories.MemberRepository;
+import org.johndoe.kitchensink.services.KeycloakAuthService;
 import org.johndoe.kitchensink.utils.ApplicationConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
+import static org.johndoe.kitchensink.dtos.MemberDto.Mapper.fromEntity;
 
 /**
  * Component responsible for seeding member data into the database.
@@ -29,6 +33,11 @@ public class DataSeeder implements CommandLineRunner {
     private final MemberRepository memberRepository;
 
     /**
+     * Service for managing Keycloak authentication.
+     */
+    private final KeycloakAuthService keycloakAuthService;
+
+    /**
      * Flag to indicate if the database should be refreshed.
      */
     @Value("${app.refresh.database}")
@@ -38,9 +47,11 @@ public class DataSeeder implements CommandLineRunner {
      * Constructor for er.
      *
      * @param memberRepository the member repository
+     * @param keycloakAuthService the keycloak auth service
      */
-    public DataSeeder(MemberRepository memberRepository) {
+    public DataSeeder(MemberRepository memberRepository, KeycloakAuthService keycloakAuthService) {
         this.memberRepository = memberRepository;
+        this.keycloakAuthService = keycloakAuthService;
     }
 
     /**
@@ -68,17 +79,17 @@ public class DataSeeder implements CommandLineRunner {
             memberRepository.deleteAll();
         }
 
-        List<Member> members = List.of(
-                new Member(1L, "john.doe", "John", "Doe", "john.doe@email.com", "9876543210", ApplicationConstants.ROLES.ADMIN.name()),
-                new Member(2L, "jane.doe", "Jane", "Doe", "jane.doe@email.com", "8976543210", ApplicationConstants.ROLES.USER.name())
+        List<MemberDto> memberDto = List.of(
+                new MemberDto("john.doe", "John", "Doe", "john.doe@email.com", "9876543210", "admin".toCharArray(), "admin".toCharArray(), ApplicationConstants.ROLES.ADMIN.name().toLowerCase()),
+                new MemberDto("jane.doe", "Jane", "Doe", "jane.doe@email.com", "9876543211", "user".toCharArray(), "user".toCharArray(), ApplicationConstants.ROLES.USER.name().toLowerCase())
         );
 
-        members.forEach(member -> memberRepository.findByMemberId(member.getMemberId())
+        memberDto.forEach(member -> memberRepository.findByUsername(member.getUsername())
                 .ifPresentOrElse(
                         existingMember -> log.info("Member already exists, skipping: {}", member.getUsername()),
                         () -> {
                             log.info("Inserting member: {}", member.getUsername());
-                            memberRepository.save(member);
+                            keycloakAuthService.register(member);
                         }
                 ));
     }

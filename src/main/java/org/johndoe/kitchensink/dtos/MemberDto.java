@@ -91,6 +91,20 @@ public class MemberDto {
     }
 
     /**
+     * Custom constructor for MemberDto
+     */
+    public MemberDto(String username, String firstName, String lastName, String email, String phoneNumber, char[] password, char[] repeatPassword, String userRole) {
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.password = password;
+        this.repeatPassword = repeatPassword;
+        this.userRole = userRole;
+    }
+
+    /**
      * Gets the password as a string.
      *
      * @return the password as a string

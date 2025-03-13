@@ -153,13 +153,14 @@ public class KeycloakAuthService {
      * @return a Mono emitting the registration response
      */
     public Mono<Void> register(MemberDto memberDto) {
-        String password = String.copyValueOf(memberDto.getPassword());
 
         String adminAccessToken = getAdminAccessToken();
 
-        createUserInKeyCloak(memberDto, adminAccessToken, password);
+        createUserInKeyCloak(memberDto, adminAccessToken);
 
-        assignRoleToUser(memberDto, adminAccessToken, ApplicationConstants.ROLES.USER.toString());
+        String userRole = memberDto.getUserRole() != null ? memberDto.getUserRole() : ApplicationConstants.ROLES.USER.name().toLowerCase();
+
+        assignRoleToUser(memberDto, adminAccessToken, userRole);
 
         memberService.createMember(memberDto);
         // TODO Handle Partial Failures (Consistency Between Keycloak and Database) - Catch the exception and call a delete user API. TOBE Picked in future.
@@ -243,26 +244,10 @@ public class KeycloakAuthService {
      *
      * @param memberDto the member DTO
      * @param adminAccessToken the admin access token
-     * @param password the password
      */
-    private void createUserInKeyCloak(MemberDto memberDto, String adminAccessToken, String password) {
+    private void createUserInKeyCloak(MemberDto memberDto, String adminAccessToken) {
 
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("username", memberDto.getUsername());
-        attributes.put("firstName", memberDto.getFirstName());
-        attributes.put("lastName", memberDto.getLastName());
-        attributes.put("email", memberDto.getEmail());
-        attributes.put("enabled", true);
-        attributes.put("credentials", new Object[]{
-                Map.of(
-                        "type", grantType,
-                        "value", memberDto.getPasswordAsString(),
-                        "temporary", false
-                )
-        });
-
-        Map<String, Object> nestedAttributes = new HashMap<>();
-        nestedAttributes.put("phoneNumber", memberDto.getPhoneNumber());
+        Map<String, Object> attributes = generateAttributes(memberDto);
 
         Mono<ResponseEntity<Void>> createUserResponse = webClient.post()
                 .uri(keycloakBaseUrl + "/admin/realms/{realm}/users", REALM_KITCHENSINK)
@@ -283,6 +268,28 @@ public class KeycloakAuthService {
 
         //Blocking as this is a synchronous application
         createUserResponse.block();
+    }
+
+    private Map<String, Object> generateAttributes(MemberDto memberDto) {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("username", memberDto.getUsername());
+        attributes.put("firstName", memberDto.getFirstName());
+        attributes.put("lastName", memberDto.getLastName());
+        attributes.put("email", memberDto.getEmail());
+        attributes.put("enabled", true);
+        attributes.put("credentials", new Object[]{
+                Map.of(
+                        "type", grantType,
+                        "value", memberDto.getPasswordAsString(),
+                        "temporary", false
+                )
+        });
+
+        Map<String, Object> nestedAttributes = new HashMap<>();
+        nestedAttributes.put("phoneNumber", memberDto.getPhoneNumber());
+
+        attributes.put("attributes", nestedAttributes);
+        return attributes;
     }
 
     /**

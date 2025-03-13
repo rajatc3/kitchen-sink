@@ -111,40 +111,6 @@
     }
   ],
   "users": [
-    {
-      "username": "john.doe",
-      "firstName": "John",
-      "lastName": "Doe",
-      "enabled": true,
-      "email": "john.doe@email.com",
-      "attributes": {
-        "phoneNumber": ["9876543210"]
-      },
-      "credentials": [
-        {
-          "type": "password",
-          "value": "admin"
-        }
-      ],
-      "realmRoles": ["admin"]
-    },
-    {
-      "username": "jane.doe",
-      "firstName": "Jane",
-      "lastName": "Doe",
-      "enabled": true,
-      "email": "jane.doe@email.com",
-      "attributes": {
-        "phoneNumber": ["8976543210"]
-      },
-      "credentials": [
-        {
-          "type": "password",
-          "value": "user"
-        }
-      ],
-      "realmRoles": ["user"]
-    }
   ],
   "roles": {
     "realm": [

@@ -50,7 +50,7 @@ services:
       SPRING_DATA_MONGODB_URI:  mongodb://root:secret@mongodb:27017/kitchensink-db?authSource=admin
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/kitchensink/protocol/openid-connect/certs
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/kitchensink
-      KEYCLOAK_BASE_URL: http://keycloak:8082
+      KEYCLOAK_BASE_URL: http://keycloak:8080
     ports:
       - '8080:8080'
     networks:
