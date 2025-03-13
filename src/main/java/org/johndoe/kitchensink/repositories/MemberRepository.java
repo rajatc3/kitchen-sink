@@ -69,4 +69,14 @@ public interface MemberRepository extends MongoRepository<Member, Long> {
      */
     @Query("{ $or: [ { 'email': ?0 }, { 'phoneNumber': ?1 } ], 'member_id': { $ne: ?2 } }")
     Optional<Member> findByEmailOrPhoneNumberAndIdNot(String email, String phoneNumber, Long memberId);
+
+    /**
+     * Finds a member by their email or username.
+     *
+     * @param identifier the email or username
+     * @return an Optional containing the found member, or empty if not found
+     */
+    @Query(value = "{ $or: [ { 'email': ?0 }, { 'username': ?0 } ] }",
+            collation = "{ 'locale': 'en', 'strength': 2 }")
+    Optional<Member> findByEmailOrUsername(String identifier);
 }

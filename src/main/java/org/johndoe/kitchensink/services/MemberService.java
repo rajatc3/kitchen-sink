@@ -192,15 +192,36 @@ public class MemberService {
         memberRepository.deleteByMemberId(id);
     }
 
-
+    /**
+     * Checks if a value exists as an email or phone number.
+     *
+     * @param value the value
+     * @return true if the value exists, false otherwise
+     */
     public boolean doesValueExistAsEmailOrPhoneNumber(String value) {
         return memberRepository.findByEmail(value).isPresent() || memberRepository.findByPhoneNumber(value).isPresent();
     }
 
+    /**
+     * Checks if a value exists as a username.
+     *
+     * @param value the value
+     * @return true if the value exists, false otherwise
+     */
     public boolean doesValueExistsAsUsername(String value){
         try{ findMemberByName(value);} catch (UserNotFoundException e) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Finds a member by their email or username.
+     *
+     * @param identifier the email or username
+     * @return the member ID
+     */
+    public Long findMemberIdByEmailOrUsername(String identifier) {
+        return memberRepository.findByEmailOrUsername(identifier).orElseThrow(() -> new RuntimeException(MEMBER_NOT_FOUND)).getMemberId();
     }
 }

@@ -75,16 +75,19 @@ public class MemberDto {
     @NotBlankCharArray(message = "Password is mandatory")
     private char[] repeatPassword;
 
+    private String userRole;
+
     /**
-     * Default constructor for MemberDto.
+     * Custom constructor for MemberDto
      */
-    public MemberDto(Long memberId, String username, String firstName, String lastName, String email, String phoneNumber) {
+    public MemberDto(Long memberId, String username, String firstName, String lastName, String email, String phoneNumber, String userRole) {
         this.memberId = memberId;
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.userRole = userRole;
     }
 
 
@@ -115,7 +118,8 @@ public class MemberDto {
                     dto.getFirstName(),
                     dto.getLastName(),
                     dto.getEmail(),
-                    dto.getPhoneNumber()
+                    dto.getPhoneNumber(),
+                    dto.getUserRole()
             );
         }
 
@@ -135,7 +139,8 @@ public class MemberDto {
                     member.getFirstName(),
                     member.getLastName(),
                     member.getEmail(),
-                    member.getPhoneNumber()
+                    member.getPhoneNumber(),
+                    member.getUserRole()
             );
         }
     }

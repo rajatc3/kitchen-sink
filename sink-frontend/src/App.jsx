@@ -3,9 +3,10 @@ import { useEffect } from "react";
 import Login from "./pages/Login";
 import Members from "./pages/Members";
 import Register from "./pages/Register";
+import Profile from "./pages/Profiles";
 import { refreshAccessToken } from "./api/auth";
 
-const REFRESH_INTERVAL = 1 * 60 * 1000; // Refresh every 9 minutes (before expiration)
+const REFRESH_INTERVAL = 9 * 60 * 1000; // Refresh every 9 minutes (before expiration)
 
 function App() {
   useEffect(() => {
@@ -26,6 +27,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/members" element={<Members />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>

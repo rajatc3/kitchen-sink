@@ -51,6 +51,7 @@ const Login = () => {
          localStorage.setItem("accessToken", data.accessToken);
          localStorage.setItem("refreshToken", data.refreshToken);
          localStorage.setItem("userEmail", identifier);
+         localStorage.setItem("memberId", data.memberId)
          localStorage.setItem("userRole", userRole);
          navigate("/members"); 
       } catch (err) {

@@ -4,6 +4,7 @@
 package org.johndoe.kitchensink.documents;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -13,6 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
  */
 @Data
 @Document(collection = "members")
+@EqualsAndHashCode(callSuper = false)
 public class Member extends BaseDocument {
 
     /**
@@ -51,6 +53,9 @@ public class Member extends BaseDocument {
     @Field("phone_number")
     String phoneNumber;
 
+    @Field("user_role")
+    String userRole;
+
     /**
      * The MongoDB document ID.
      */
@@ -72,13 +77,15 @@ public class Member extends BaseDocument {
      * @param lastName    the last name of the member
      * @param email       the email address of the member
      * @param phoneNumber the phone number of the member
+     * @param userRole    the role of the member
      */
-    public Member(Long memberId, String username, String firstName, String lastName, String email, String phoneNumber) {
+    public Member(Long memberId, String username, String firstName, String lastName, String email, String phoneNumber, String userRole) {
         this.memberId = memberId;
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.userRole = userRole;
     }
 }

@@ -97,14 +97,20 @@ public class KeycloakAuthService {
                 .body(BodyInserters.fromFormData("client_id", clientId)
                         .with("client_secret", clientSecret)
                         .with("grant_type", grantType)
-                        .with("username", request.email())
+                        .with("username", request.userIdentifier())
                         .with("password", request.password()))
                 .retrieve()
                 .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        clientResponse -> clientResponse.bodyToMono(String.class)
-                                .flatMap(error -> Mono.error(new RuntimeException("Error: " + error))))
+                        clientResponse -> {
+                            if (clientResponse.statusCode() == HttpStatus.UNAUTHORIZED) {
+                                return Mono.error(new ApplicationException("Invalid Credentials!!"));
+                            }
+                            return clientResponse.bodyToMono(String.class)
+                                    .flatMap(error -> Mono.error(new RuntimeException("Error: " + error)));
+                        })
                 .bodyToMono(KeycloakTokenResponse.class)
                 .map(tokenResponse -> new AuthResponse(
+                        memberService.findMemberIdByEmailOrUsername(request.userIdentifier()),
                         tokenResponse.accessToken(),
                         tokenResponse.refreshToken(),
                         jwt.getRoleFromJWT(tokenResponse.accessToken())

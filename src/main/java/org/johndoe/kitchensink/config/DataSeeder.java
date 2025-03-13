@@ -2,6 +2,7 @@ package org.johndoe.kitchensink.config;
 
 import org.johndoe.kitchensink.documents.Member;
 import org.johndoe.kitchensink.repositories.MemberRepository;
+import org.johndoe.kitchensink.utils.ApplicationConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,8 +69,8 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         List<Member> members = List.of(
-                new Member(1L, "john.doe", "John", "Doe", "john.doe@email.com", "9876543210"),
-                new Member(2L, "jane.doe", "Jane", "Doe", "jane.doe@email.com", "8976543210")
+                new Member(1L, "john.doe", "John", "Doe", "john.doe@email.com", "9876543210", ApplicationConstants.ROLES.ADMIN.name()),
+                new Member(2L, "jane.doe", "Jane", "Doe", "jane.doe@email.com", "8976543210", ApplicationConstants.ROLES.USER.name())
         );
 
         members.forEach(member -> memberRepository.findByMemberId(member.getMemberId())

@@ -11,17 +11,17 @@ const apiClient = axios.create({
   withCredentials: true, // Ensures JSESSIONID is sent
 });
 
-export const login = async (email, password) => {
-   try {
-     const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-       email,
-       password,
-     });
-     return response.data;
-   } catch (error) {
-     throw error.response?.data || "Login failed";
-   }
- };
+export const login = async (userIdentifier, password) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+      userIdentifier,
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || "Login failed";
+  }
+};
 
 // Function to refresh token
 export const refreshAccessToken = async () => {
@@ -69,25 +69,25 @@ const logoutUser = () => {
 // Function to register user
 export const register = async (formData) => {
   try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-      });
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-          return { 
-              success: false, 
-              errors: data.errors || ["Registration failed"],
-              message: data.message || "Registration failed"
-          };
-      }
+    if (!response.ok) {
+      return {
+        success: false,
+        errors: data.errors || ["Registration failed"],
+        message: data.message || "Registration failed"
+      };
+    }
 
-      return { success: true, message: "Registration successful" };
+    return { success: true, message: "Registration successful" };
   } catch (error) {
-      return { success: false, errors: ["Network error. Please try again."] };
+    return { success: false, errors: ["Network error. Please try again."] };
   }
 };
 

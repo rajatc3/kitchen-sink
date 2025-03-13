@@ -1,5 +1,6 @@
 package org.johndoe.kitchensink.security.config;
 
+import org.johndoe.kitchensink.utils.ApplicationConstants;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -48,6 +49,7 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
         if (realmAccess != null && realmAccess.containsKey("roles")) {
             List<String> roles = (List<String>) realmAccess.get("roles");
             for (String role : roles) {
+                if(role.equalsIgnoreCase(ApplicationConstants.ROLES.USER.name()) || role.equalsIgnoreCase(ApplicationConstants.ROLES.ADMIN.name()))
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
             }
         }
