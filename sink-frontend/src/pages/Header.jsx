@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Header = ({ userEmail, userRole, handleLogout }) => {
+const Header = ({ userEmail, userRole }) => {
    const navigate = useNavigate();
    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
    const dropdownRef = useRef(null);
@@ -16,6 +16,11 @@ const Header = ({ userEmail, userRole, handleLogout }) => {
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
    }, []);
+
+   const handleLogout = () => {
+      localStorage.clear();
+      navigate("/login");
+   };
 
    return (
       <header className="fixed top-0 left-0 w-full flex justify-between items-center bg-white/10 backdrop-blur-lg shadow-lg p-4 border-b border-white/20 px-10 z-50">

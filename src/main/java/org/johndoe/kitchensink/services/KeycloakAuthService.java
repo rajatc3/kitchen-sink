@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -191,7 +192,7 @@ public class KeycloakAuthService {
 
         userIdMono.flatMap(userId -> WebClient.create()
                 .get()
-                .uri(keycloakBaseUrl + "/admin/realms/{realm}/roles/{roleName}", REALM_KITCHENSINK, roleToAssign) // Fetch user role ID
+                .uri(keycloakBaseUrl + "/admin/realms/{realm}/roles/{roleName}", REALM_KITCHENSINK, roleToAssign.toLowerCase()) // Fetch user role ID
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminAccessToken)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response ->
@@ -240,31 +241,34 @@ public class KeycloakAuthService {
     /**
      * Creates a user in Keycloak.
      *
-     * @param request the member DTO
+     * @param memberDto the member DTO
      * @param adminAccessToken the admin access token
      * @param password the password
      */
-    private void createUserInKeyCloak(MemberDto request, String adminAccessToken, String password) {
+    private void createUserInKeyCloak(MemberDto memberDto, String adminAccessToken, String password) {
+
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("username", memberDto.getUsername());
+        attributes.put("firstName", memberDto.getFirstName());
+        attributes.put("lastName", memberDto.getLastName());
+        attributes.put("email", memberDto.getEmail());
+        attributes.put("enabled", true);
+        attributes.put("credentials", new Object[]{
+                Map.of(
+                        "type", grantType,
+                        "value", memberDto.getPasswordAsString(),
+                        "temporary", false
+                )
+        });
+
+        Map<String, Object> nestedAttributes = new HashMap<>();
+        nestedAttributes.put("phoneNumber", memberDto.getPhoneNumber());
+
         Mono<ResponseEntity<Void>> createUserResponse = webClient.post()
                 .uri(keycloakBaseUrl + "/admin/realms/{realm}/users", REALM_KITCHENSINK)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminAccessToken)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(BodyInserters.fromValue(Map.of(
-                        "username", request.getUsername(),
-                        "firstName", request.getFirstName(),
-                        "lastName", request.getLastName(),
-                        "email", request.getEmail(),
-                        "phoneNumber", request.getPhoneNumber(),
-
-                        "enabled", true,
-                        "credentials", new Object[]{
-                                Map.of(
-                                        "type", grantType,
-                                        "value", password,
-                                        "temporary", false
-                                )
-                        }
-                )))
+                .body(BodyInserters.fromValue(attributes))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> {
                     if (response.statusCode() == HttpStatus.CONFLICT) {

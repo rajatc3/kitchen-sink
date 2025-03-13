@@ -32,17 +32,12 @@ const Members = () => {
       getMembers();
    }, [navigate]);
 
-   const handleLogout = () => {
-      localStorage.clear();
-      navigate("/login");
-   };
-
    return (
       <div className="min-h-screen flex flex-col items-center text-white p-6 bg-cover bg-center"
          style={{ backgroundImage: "url('https://images.alphacoders.com/114/thumb-1920-1146731.jpg')" }}>
 
          {/* Using the extracted Header component */}
-         <Header userEmail={userEmail} userRole={userRole} handleLogout={handleLogout} />
+         <Header userEmail={userEmail} userRole={userRole} />
 
          {/* MAIN CONTENT (Table Starts Below Header) */}
          <div className="w-full max-w-6xl bg-white/10 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/20 mt-24">
