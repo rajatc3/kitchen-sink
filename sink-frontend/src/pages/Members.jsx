@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchMembers, addMember, updateMember, deleteMember } from "../api/members";
+import Header from "../pages/Header"; 
 
 const Members = () => {
    const [members, setMembers] = useState([]);
@@ -38,37 +39,21 @@ const Members = () => {
 
    return (
       <div className="min-h-screen flex flex-col items-center text-white p-6 bg-cover bg-center"
-         style={{ backgroundImage: "url('https://wallpapercave.com/wp/6SLzBEY.jpg')" }}>
+         style={{ backgroundImage: "url('https://images.alphacoders.com/114/thumb-1920-1146731.jpg')" }}>
 
-         {/* HEADER - FIXED AT TOP */}
-         <header className="fixed top-0 left-0 w-full flex justify-between items-center bg-white/10 backdrop-blur-lg shadow-lg p-4 border-b border-white/20 px-10 z-50">
-            {/* Left: App Name */}
-            <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">Kitchen Sink</h1>
-            
-            {/* Center: Navigation */}
-            <nav className="flex space-x-24 text-lg font-semibold">
-               <button onClick={() => navigate("/members")} className="text-white hover:text-gray-300 transition-all">Home</button>
-               <button onClick={() => navigate("/profile")} className="text-white hover:text-gray-300 transition-all">Your Profile</button>
-               {userRole === "ADMIN" && <button onClick={() => navigate("/admin")} className="text-white hover:text-gray-300 transition-all">Admin Section</button>}
-            </nav>
-
-            {/* Right: User Info & Logout */}
-            <div className="flex items-center space-x-4 bg-white/10 px-4 py-2 rounded-full shadow-md backdrop-blur-lg">
-               <span className="text-white font-medium">{userEmail} - <span className="font-bold">{userRole}</span></span>
-               <button onClick={handleLogout} className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition-all">Logout</button>
-            </div>
-         </header>
+         {/* Using the extracted Header component */}
+         <Header userEmail={userEmail} userRole={userRole} handleLogout={handleLogout} />
 
          {/* MAIN CONTENT (Table Starts Below Header) */}
          <div className="w-full max-w-6xl bg-white/10 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/20 mt-24">
             <h2 className="text-3xl font-bold text-center mb-6">Kitchen Sink Members List</h2>
-            
+
             {userRole === "ADMIN" && (
                <div className="mb-4 grid grid-cols-4 gap-2">
                   <input type="text" placeholder="Name" className="p-2 rounded text-black" value={newMember.name} onChange={(e) => setNewMember({ ...newMember, name: e.target.value })} />
                   <input type="email" placeholder="Email" className="p-2 rounded text-black" value={newMember.email} onChange={(e) => setNewMember({ ...newMember, email: e.target.value })} />
                   <input type="text" placeholder="Phone" className="p-2 rounded text-black" value={newMember.phoneNumber} onChange={(e) => setNewMember({ ...newMember, phoneNumber: e.target.value })} />
-                  <button onClick={() => {}} className="bg-green-500 px-4 py-2 rounded hover:bg-green-600">Add</button>
+                  <button onClick={() => { }} className="bg-green-500 px-4 py-2 rounded hover:bg-green-600">Add</button>
                </div>
             )}
 

@@ -6,7 +6,7 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profiles";
 import { refreshAccessToken } from "./api/auth";
 
-const REFRESH_INTERVAL = 9 * 60 * 1000; // Refresh every 9 minutes (before expiration)
+const REFRESH_INTERVAL = 5 * 60 * 1000; // Refresh every 5 minutes (before expiration)
 
 function App() {
   useEffect(() => {
@@ -16,7 +16,7 @@ function App() {
       } catch (error) {
         console.error("Failed to refresh token, logging out...");
       }
-    }, REFRESH_INTERVAL); // Refresh token every 9 minutes
+    }, REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
   }, []);

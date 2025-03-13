@@ -23,8 +23,7 @@ const Login = () => {
       } else {
          // Check if input looks like an email
          const isEmail = identifier.includes("@");
-   
-         if (isEmail && !identifier.match(/^\S+@\S+\.\S+$/)) {
+         if (isEmail && !identifier.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
             setIdentifierError("Invalid email format");
             isValid = false;
          }

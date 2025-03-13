@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -187,7 +187,7 @@ public class KeycloakAuthService {
      * @param roleToAssign the role to assign
      */
     private void assignRoleToUser(MemberDto memberDto, String adminAccessToken, String roleToAssign) {
-        Mono<String> userIdMono = getUserIdFromKeycloak(memberDto, adminAccessToken);
+        Mono<String> userIdMono = getUserIdFromKeycloakUsingUsername(memberDto, adminAccessToken);
 
         userIdMono.flatMap(userId -> WebClient.create()
                 .get()
@@ -216,10 +216,10 @@ public class KeycloakAuthService {
         userIdMono.block();
     }
 
-    private Mono<String> getUserIdFromKeycloak(MemberDto memberDto, String adminAccessToken) {
+    private Mono<String> getUserIdFromKeycloakUsingUsername(MemberDto memberDto, String adminAccessToken) {
         Mono<String> userIdMono = WebClient.create()
                 .get()
-                .uri(keycloakBaseUrl + "/admin/realms/{realm}/users?email={username}", REALM_KITCHENSINK, memberDto.getEmail())
+                .uri(keycloakBaseUrl + "/admin/realms/{realm}/users?username={username}", REALM_KITCHENSINK, memberDto.getUsername())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminAccessToken)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response ->
@@ -229,10 +229,7 @@ public class KeycloakAuthService {
                         Mono.error(new ApplicationException("Keycloak server error: " + response.statusCode()))
                 ).bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {
                 })
-                .map(users -> {
-                            System.out.println(users.get(0).entrySet());
-                            return (String) users.get(0).get("id");
-                        }
+                .map(users -> (String) users.get(0).get("id")
                 );
 
         //Blocking as this is a synchronous application
@@ -308,19 +305,24 @@ public class KeycloakAuthService {
 
     public void updateUserInKeycloak(MemberDto memberDto) {
         String adminAccessToken = getAdminAccessToken();
-        String userId = getUserIdFromKeycloak(memberDto, adminAccessToken).block();
+        String userId = getUserIdFromKeycloakUsingUsername(memberDto, adminAccessToken).block();
 
         if (userId == null) {
             throw new ApplicationException("User not found in Keycloak.");
         }
 
-        Map<String, Serializable> attributes = Map.of(
-                "firstName", memberDto.getFirstName(),
-                "lastName", memberDto.getLastName(),
-                "email", memberDto.getEmail(),
-                "phoneNumber", memberDto.getPhoneNumber());
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("firstName", memberDto.getFirstName());
+        attributes.put("lastName", memberDto.getLastName());
+        attributes.put("email", memberDto.getEmail());
+        attributes.put("enabled", true);
 
-        if(null == memberDto.getPasswordAsString()){
+        Map<String, Object> nestedAttributes = new HashMap<>();
+        nestedAttributes.put("phoneNumber", memberDto.getPhoneNumber());
+
+        attributes.put("attributes", nestedAttributes);
+
+        if (memberDto.getPasswordAsString() != null) {
             attributes.put("credentials", new Object[]{
                     Map.of(
                             "type", grantType,
@@ -329,6 +331,7 @@ public class KeycloakAuthService {
                     )
             });
         }
+
 
         Mono<ResponseEntity<Void>> updateUserResponse = WebClient.create()
                 .put()

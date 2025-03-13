@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Header from "../pages/Header";
+import { fetchProfile, updateProfile } from "../api/profile";
 
 const Profile = () => {
-   const [profile, setProfile] = useState({
+   const [formData, setFormData] = useState({
       firstName: "",
       lastName: "",
       username: "",
@@ -10,137 +12,197 @@ const Profile = () => {
       phoneNumber: "",
    });
 
-   const [editFirstName, setEditFirstName] = useState("");
-   const [editLastName, setEditLastName] = useState("");
+   const [newPassword, setNewPassword] = useState("");
+   const [showPasswordField, setShowPasswordField] = useState(false);
+   const [errors, setErrors] = useState({});
+   const [error, setError] = useState("");
+   const [successMessage, setSuccessMessage] = useState("");
    const [loading, setLoading] = useState(true);
-   const [error, setError] = useState(null);
-   const navigate = useNavigate();
+   const [profileImage, setProfileImage] = useState(localStorage.getItem("profileImage") || "https://www.w3schools.com/howto/img_avatar.png");
 
-   // Get user data from localStorage
    const userId = localStorage.getItem("memberId");
    const token = localStorage.getItem("accessToken");
-   const userRole = localStorage.getItem("userRole") || "USER"; 
-   const userEmail = localStorage.getItem("userEmail") || "Not Available";
+   const userRole = localStorage.getItem("userRole");
+
+   const fetchData = async () => {
+      setLoading(true);
+      const profileData = await fetchProfile(userId, token);
+      if (profileData.error) {
+         setError(profileData.error);
+      } else {
+         setFormData(profileData);
+      }
+      setLoading(false);
+   };
 
    useEffect(() => {
-      if (!token) {
-         alert("Unauthorized! Redirecting to login.");
-         navigate("/login");
-         return;
+      fetchData();
+   }, []);
+
+   const validateForm = () => {
+      let newErrors = {};
+
+      if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
+      if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+      if (!/^[6789]\d{9}$/.test(formData.phoneNumber)) {
+         newErrors.phoneNumber = "Enter a valid 10-digit Indian phone number.";
       }
 
-      const fetchProfile = async () => {
-         try {
-            const response = await fetch(`http://localhost:8080/api/dashboard/profile/${userId}`, {
-               method: "GET",
-               headers: {
-                  "Authorization": `Bearer ${token}`,
-                  "Content-Type": "application/json",
-               },
-            });
-
-            if (!response.ok) throw new Error("Failed to fetch profile");
-            const data = await response.json();
-            setProfile(data);
-            setEditFirstName(data.firstName);
-            setEditLastName(data.lastName);
-         } catch (err) {
-            setError(err.message);
-         } finally {
-            setLoading(false);
-         }
-      };
-
-      fetchProfile();
-   }, [navigate, token, userId]);
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+   };
 
    const handleUpdate = async () => {
-      if (!editFirstName.trim() || !editLastName.trim()) {
-         return alert("First Name and Last Name cannot be empty!");
-      }
+      setError("");
+      setSuccessMessage("");
 
-      try {
-         const response = await fetch(`http://localhost:8080/api/dashboard/profile/${userId}`, {
-            method: "PUT",
-            headers: {
-               "Authorization": `Bearer ${token}`,
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-               firstName: editFirstName,
-               lastName: editLastName,
-            }),
-         });
+      if (!validateForm()) return;
 
-         if (!response.ok) throw new Error("Failed to update profile");
+      const updatePayload = { ...formData };
+      if (newPassword.trim()) updatePayload.password = newPassword;
 
-         alert("Profile updated successfully!");
-         setProfile({ ...profile, firstName: editFirstName, lastName: editLastName });
-      } catch (err) {
-         setError(err.message);
+      const result = await updateProfile(userId, token, updatePayload);
+
+      if (result.error) {
+         setError("Failed to update profile. Please try again.");
+      } else {
+         setSuccessMessage("Profile updated successfully!");
+         setNewPassword("");
+         setShowPasswordField(false);
+
+         // Auto-hide success message after 3 seconds
+         setTimeout(() => setSuccessMessage(""), 3000);
       }
    };
 
-   const handleLogout = () => {
-      localStorage.clear();
-      navigate("/login");
+   const handleImageUpload = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+         const reader = new FileReader();
+         reader.onload = (e) => {
+            setProfileImage(e.target.result);
+            localStorage.setItem("profileImage", e.target.result);
+         };
+         reader.readAsDataURL(file);
+      }
    };
 
    if (loading) return <p className="text-white text-center mt-10">Loading...</p>;
-   if (error) return <p className="text-red-500 text-center mt-10">{error}</p>;
 
    return (
       <div className="min-h-screen flex flex-col items-center text-white p-6 bg-cover bg-center"
-         style={{ backgroundImage: "url('https://wallpapercave.com/wp/6SLzBEY.jpg')" }}>
+         style={{ backgroundImage: "url('https://images.alphacoders.com/114/thumb-1920-1146731.jpg')" }}>
+         
+         <Header userEmail={formData.email} userRole={userRole} />
 
-         {/* HEADER - FIXED AT TOP */}
-         <header className="fixed top-0 left-0 w-full flex justify-between items-center bg-white/10 backdrop-blur-lg shadow-lg p-4 border-b border-white/20 px-10 z-50">
-            <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">Kitchen Sink</h1>
+         <div className="w-full max-w-3xl bg-white/10 backdrop-blur-lg p-8 rounded-xl shadow-lg border border-white/20 mt-20">
+            <h2 className="text-3xl font-bold text-center mb-6">Your Profile</h2>
 
-            <nav className="flex space-x-24 text-lg font-semibold">
-               <button onClick={() => navigate("/members")} className="text-white hover:text-gray-300 transition-all">Home</button>
-               <button onClick={() => navigate("/profile")} className="text-white hover:text-gray-300 transition-all">Your Profile</button>
-               {userRole === "ADMIN" && <button onClick={() => navigate("/admin")} className="text-white hover:text-gray-300 transition-all">Admin Section</button>}
-            </nav>
-
-            <div className="flex items-center space-x-4 bg-white/10 px-4 py-2 rounded-full shadow-md backdrop-blur-lg">
-               <span className="text-white font-medium">{userEmail} - <span className="font-bold">{userRole}</span></span>
-               <button onClick={handleLogout} className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition-all">Logout</button>
+            <div className="flex justify-center mb-6 relative">
+               <label className="cursor-pointer">
+                  <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-lg transition-transform transform hover:scale-110">
+                     <img
+                        src={profileImage}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                     />
+                  </div>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+               </label>
             </div>
-         </header>
 
-         {/* Profile Section */}
-         <div className="w-full max-w-3xl bg-white/10 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/20 mt-24">
-            <h2 className="text-3xl font-bold text-center mb-6">Profile</h2>
-
-            <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
                <div>
-                  <label className="block text-lg font-medium">First Name</label>
-                  <input type="text" className="w-full p-2 rounded-lg text-black" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} />
+                  <label className="block text-sm font-semibold">First Name</label>
+                  <input
+                     type="text"
+                     value={formData.firstName}
+                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                     className="w-full px-3 py-2 bg-white/20 text-white rounded-lg outline-none backdrop-blur-md"
+                  />
                </div>
 
                <div>
-                  <label className="block text-lg font-medium">Last Name</label>
-                  <input type="text" className="w-full p-2 rounded-lg text-black" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} />
+                  <label className="block text-sm font-semibold">Last Name</label>
+                  <input
+                     type="text"
+                     value={formData.lastName}
+                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                     className="w-full px-3 py-2 bg-white/20 text-white rounded-lg outline-none backdrop-blur-md"
+                  />
                </div>
 
-               <div>
-                  <label className="block text-lg font-medium">Username</label>
-                  <input type="text" className="w-full p-2 rounded-lg bg-gray-300 text-black cursor-not-allowed" value={profile.username} readOnly />
+               <div className="col-span-2">
+                  <label className="block text-sm font-semibold">Username</label>
+                  <input
+                     type="text"
+                     value={formData.username}
+                     readOnly
+                     className="w-full px-3 py-2 bg-white/20 text-white rounded-lg outline-none cursor-not-allowed backdrop-blur-md"
+                  />
                </div>
 
-               <div>
-                  <label className="block text-lg font-medium">Email</label>
-                  <input type="email" className="w-full p-2 rounded-lg bg-gray-300 text-black cursor-not-allowed" value={profile.email} readOnly />
+               <div className="col-span-2">
+                  <label className="block text-sm font-semibold">Email</label>
+                  <input
+                     type="email"
+                     value={formData.email}
+                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                     className="w-full px-3 py-2 bg-white/20 text-white rounded-lg outline-none backdrop-blur-md"
+                  />
                </div>
 
-               <div>
-                  <label className="block text-lg font-medium">Phone Number</label>
-                  <input type="text" className="w-full p-2 rounded-lg bg-gray-300 text-black cursor-not-allowed" value={profile.phoneNumber} readOnly />
+               <div className="col-span-2">
+                  <label className="block text-sm font-semibold">Phone Number</label>
+                  <input
+                     type="text"
+                     value={formData.phoneNumber}
+                     onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                     className="w-full px-3 py-2 bg-white/20 text-white rounded-lg outline-none backdrop-blur-md"
+                  />
                </div>
+            </div>
 
-               <button onClick={handleUpdate} className="w-full bg-green-500 px-4 py-2 rounded-lg hover:bg-green-600 transition-all mt-4">
-                  Update Profile
+            {!showPasswordField ? (
+               <div className="text-center mt-4">
+                  <button onClick={() => setShowPasswordField(true)} className="text-blue-400 hover:underline">
+                     Change Password
+                  </button>
+               </div>
+            ) : (
+               <div className="mt-4">
+                  <label className="block text-sm font-semibold">New Password</label>
+                  <input
+                     type="password"
+                     value={newPassword}
+                     onChange={(e) => setNewPassword(e.target.value)}
+                     className="w-full px-3 py-2 bg-white/20 text-white rounded-lg outline-none backdrop-blur-md"
+                  />
+                  <div className="text-center mt-2">
+                     <button onClick={() => setShowPasswordField(false)} className="text-gray-300 hover:underline">
+                        Nevermind, I'll keep my current password
+                     </button>
+                  </div>
+               </div>
+            )}
+
+            {error && (
+               <div className="bg-red-500 text-white text-center p-2 rounded-lg mt-4">
+                  {error}
+               </div>
+            )}
+
+            {successMessage && (
+               <div className="bg-green-500 text-white text-center p-2 rounded-lg mt-4">
+                  {successMessage}
+               </div>
+            )}
+
+            <div className="flex justify-center mt-6">
+               <button
+                  onClick={handleUpdate}
+                  className="px-6 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition">
+                  Save Changes
                </button>
             </div>
          </div>

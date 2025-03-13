@@ -3,6 +3,7 @@ package org.johndoe.kitchensink.repositories;
 import org.johndoe.kitchensink.documents.Member;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -79,4 +80,16 @@ public interface MemberRepository extends MongoRepository<Member, Long> {
     @Query(value = "{ $or: [ { 'email': ?0 }, { 'username': ?0 } ] }",
             collation = "{ 'locale': 'en', 'strength': 2 }")
     Optional<Member> findByEmailOrUsername(String identifier);
+
+    /**
+     * Finds a member by their email or phone number, excluding the given username.
+     *
+     * @param email       the email address
+     * @param phoneNumber the phone number
+     * @param username    the username
+     * @return an Optional containing the found member, or empty if not found
+     */
+    @Query("{ '$and': [ { '$or': [ { 'email': ?0 }, { 'phoneNumber': ?1 } ] }, { 'username': { '$ne': ?2 } } ] }")
+    Optional<Member> findRecordsWithConflictingEmailOrPhoneNumber(@Param("email") String email, @Param("phoneNumber") String phoneNumber, @Param("username") String username);
+
 }
