@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Header = ({ userEmail, userRole }) => {
    const navigate = useNavigate();
+   const location = useLocation();
    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
    const dropdownRef = useRef(null);
 
@@ -28,14 +29,8 @@ const Header = ({ userEmail, userRole }) => {
          <div className="flex items-center space-x-16 flex-1">
             <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">Kitchen Sink</h1>
             <nav className="flex space-x-8 text-lg font-semibold">
-               <button onClick={() => navigate("/members")} className="text-white hover:text-gray-300 transition-all">
-                  Home
-               </button>
-               {userRole === "ADMIN" && (
-                  <button onClick={() => navigate("/admin")} className="text-white hover:text-gray-300 transition-all">
-                     Admin Section
-                  </button>
-               )}
+               <NavItem path="/members" currentPath={location.pathname}>Home</NavItem>
+               {userRole === "ADMIN" && <NavItem path="/admin" currentPath={location.pathname}>Admin Section</NavItem>}
             </nav>
          </div>
 
@@ -72,6 +67,26 @@ const Header = ({ userEmail, userRole }) => {
             )}
          </div>
       </header>
+   );
+};
+
+// Reusable Navigation Item with Active State Styling
+const NavItem = ({ path, currentPath, children }) => {
+   const navigate = useNavigate();
+   const isActive = currentPath === path;
+
+   return (
+      <button
+         onClick={() => navigate(path)}
+         className={`relative transition-all duration-300 ${
+            isActive ? "text-blue-400 font-semibold" : "text-white hover:text-gray-300"
+         }`}
+      >
+         {children}
+         {isActive && (
+            <span className="absolute left-0 bottom-0 w-full h-0.5 bg-blue-400 animate-pulse"></span>
+         )}
+      </button>
    );
 };
 

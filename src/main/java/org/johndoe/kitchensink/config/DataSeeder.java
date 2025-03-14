@@ -1,6 +1,5 @@
 package org.johndoe.kitchensink.config;
 
-import org.johndoe.kitchensink.documents.Member;
 import org.johndoe.kitchensink.dtos.MemberDto;
 import org.johndoe.kitchensink.repositories.MemberRepository;
 import org.johndoe.kitchensink.services.KeycloakAuthService;
@@ -12,8 +11,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-
-import static org.johndoe.kitchensink.dtos.MemberDto.Mapper.fromEntity;
 
 /**
  * Component responsible for seeding member data into the database.
@@ -46,7 +43,7 @@ public class DataSeeder implements CommandLineRunner {
     /**
      * Constructor for er.
      *
-     * @param memberRepository the member repository
+     * @param memberRepository    the member repository
      * @param keycloakAuthService the keycloak auth service
      */
     public DataSeeder(MemberRepository memberRepository, KeycloakAuthService keycloakAuthService) {

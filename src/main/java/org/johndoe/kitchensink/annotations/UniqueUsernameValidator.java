@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UniqueUsernameValidator implements ConstraintValidator<UniqueUsername, String> {
 
-    private MemberService memberService;
+    private final MemberService memberService;
 
     public UniqueUsernameValidator(MemberService memberService) {
         this.memberService = memberService;

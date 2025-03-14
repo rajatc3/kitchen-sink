@@ -43,7 +43,7 @@ public class DashboardController {
     /**
      * Updates the profile of a user.
      *
-     * @param id the user ID
+     * @param id        the user ID
      * @param memberDto the updated user profile
      * @return the updated user profile
      */

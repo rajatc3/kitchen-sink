@@ -30,20 +30,17 @@ public class KeycloakAuthService {
 
     public static final String REALM_KITCHENSINK = "kitchensink";
     /**
+     * Master client ID for Keycloak.
+     */
+    private static final String MASTER_CLIENTID = "admin-cli";
+    /**
      * WebClient for KeycloakAuthService.
      */
     private final WebClient webClient;
-
     /**
      * JwtAuthConverter for converting JWT tokens to authentication tokens.
      */
     private final JwtAuthConverter jwt;
-
-    /**
-     * Master client ID for Keycloak.
-     */
-    private static final String MASTER_CLIENTID = "admin-cli";
-
     /**
      * Keycloak URL.
      */
@@ -80,8 +77,8 @@ public class KeycloakAuthService {
      * Constructs a KeycloakAuthService with the given WebClient, JwtAuthConverter, and MemberService.
      *
      * @param webClientBuilder the WebClient.Builder to use for creating a WebClient
-     * @param jwt the JwtAuthConverter to use for converting JWT tokens
-     * @param memberService the MemberService to use for creating members
+     * @param jwt              the JwtAuthConverter to use for converting JWT tokens
+     * @param memberService    the MemberService to use for creating members
      */
     public KeycloakAuthService(WebClient.Builder webClientBuilder, JwtAuthConverter jwt, MemberService memberService) {
         this.webClient = webClientBuilder.build();
@@ -187,9 +184,9 @@ public class KeycloakAuthService {
     /**
      * Assigns a role to a user.
      *
-     * @param memberDto the member DTO
+     * @param memberDto        the member DTO
      * @param adminAccessToken the admin access token
-     * @param roleToAssign the role to assign
+     * @param roleToAssign     the role to assign
      */
     private void assignRoleToUser(MemberDto memberDto, String adminAccessToken, String roleToAssign) {
         Mono<String> userIdMono = getUserIdFromKeycloakUsingUsername(memberDto, adminAccessToken);
@@ -245,7 +242,7 @@ public class KeycloakAuthService {
     /**
      * Creates a user in Keycloak.
      *
-     * @param memberDto the member DTO
+     * @param memberDto        the member DTO
      * @param adminAccessToken the admin access token
      */
     private void createUserInKeyCloak(MemberDto memberDto, String adminAccessToken) {

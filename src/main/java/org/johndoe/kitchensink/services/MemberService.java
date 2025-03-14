@@ -5,6 +5,8 @@ import org.johndoe.kitchensink.dtos.MemberDto;
 import org.johndoe.kitchensink.exceptions.UserNotFoundException;
 import org.johndoe.kitchensink.exceptions.ValidationException;
 import org.johndoe.kitchensink.repositories.MemberRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -114,6 +116,10 @@ public class MemberService {
      */
     public List<MemberDto> findAllMembers() {
         return memberRepository.findAll().stream().map((MemberDto.Mapper::fromEntity)).toList();
+    }
+
+    public Page<MemberDto> findAllMembers(Pageable page) {
+        return memberRepository.findAll(page).map(MemberDto.Mapper::fromEntity);
     }
 
     /**
@@ -236,8 +242,10 @@ public class MemberService {
      * @param value the value
      * @return true if the value exists, false otherwise
      */
-    public boolean doesValueExistsAsUsername(String value){
-        try{ findMemberByName(value);} catch (UserNotFoundException e) {
+    public boolean doesValueExistsAsUsername(String value) {
+        try {
+            findMemberByName(value);
+        } catch (UserNotFoundException e) {
             return false;
         }
         return true;

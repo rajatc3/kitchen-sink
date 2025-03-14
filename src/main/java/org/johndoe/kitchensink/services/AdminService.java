@@ -1,20 +1,14 @@
 package org.johndoe.kitchensink.services;
 
 import lombok.AllArgsConstructor;
-
 import org.johndoe.kitchensink.documents.Comment;
 import org.johndoe.kitchensink.documents.Post;
-import org.johndoe.kitchensink.dtos.CommentDto;
-import org.johndoe.kitchensink.dtos.MemberDto;
-import org.johndoe.kitchensink.dtos.PostDto;
 import org.johndoe.kitchensink.repositories.CommentRepository;
 import org.johndoe.kitchensink.repositories.PostRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.johndoe.kitchensink.dtos.MemberDto.Mapper.toEntity;
 
 @Service
 @AllArgsConstructor

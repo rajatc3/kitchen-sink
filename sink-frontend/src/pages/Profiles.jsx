@@ -24,7 +24,7 @@ const Profile = () => {
 
    const userId = localStorage.getItem("memberId");
    const token = localStorage.getItem("accessToken");
-   const userRole = localStorage.getItem("userRole");
+   const userRole = localStorage.getItem("userRole").toUpperCase();
    const userEmail = localStorage.getItem("userEmail");
 
    const fetchData = async () => {

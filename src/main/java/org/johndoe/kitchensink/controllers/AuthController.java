@@ -68,7 +68,7 @@ public class AuthController {
 
     @PreAuthorize("permitAll()")
     @PostMapping("/register")
-    public ResponseEntity<Map<String,String>> register(@Valid @RequestBody MemberDto request) {
+    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody MemberDto request) {
         return authService.register(request)
                 .then(Mono.just(ResponseEntity.ok(Map.of("message", "User registered successfully")))).block();
     }

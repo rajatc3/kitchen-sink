@@ -37,6 +37,20 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
     }
 
     /**
+     * Extracts the username from a Principal object.
+     *
+     * @param principal the Principal object
+     * @return the username from the Principal
+     */
+    public static String getUsernameFromPrincipal(Principal principal) {
+        if (principal instanceof JwtAuthenticationToken jwtToken) {
+            Map<String, Object> claims = jwtToken.getToken().getClaims();
+            return (String) claims.get("preferred_username");
+        }
+        return null;
+    }
+
+    /**
      * Converts a Jwt to an AbstractAuthenticationToken by extracting roles.
      *
      * @param jwt the JWT token
@@ -50,8 +64,8 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
         if (realmAccess != null && realmAccess.containsKey("roles")) {
             List<String> roles = (List<String>) realmAccess.get("roles");
             for (String role : roles) {
-                if(role.equalsIgnoreCase(ApplicationConstants.ROLES.USER.name()) || role.equalsIgnoreCase(ApplicationConstants.ROLES.ADMIN.name()))
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+                if (role.equalsIgnoreCase(ApplicationConstants.ROLES.USER.name()) || role.equalsIgnoreCase(ApplicationConstants.ROLES.ADMIN.name()))
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
             }
         }
 
@@ -66,19 +80,5 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
      */
     public String getRoleFromJWT(String jwtString) {
         return convert(jwtDecoder.decode(jwtString)).getAuthorities().toString();
-    }
-
-    /**
-     * Extracts the username from a Principal object.
-     *
-     * @param principal the Principal object
-     * @return the username from the Principal
-     */
-    public static String getUsernameFromPrincipal(Principal principal) {
-        if (principal instanceof JwtAuthenticationToken jwtToken) {
-            Map<String, Object> claims = jwtToken.getToken().getClaims();
-            return (String) claims.get("preferred_username");
-        }
-        return null;
     }
 }

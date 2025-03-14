@@ -19,12 +19,6 @@ import java.util.List;
 public class CorsConfig {
 
     /**
-     * Creates a new CorsConfig.
-     */
-    CorsConfig() {
-    }
-
-    /**
      * Logger for the CorsConfig class.
      */
     private static final Logger log = LoggerFactory.getLogger(CorsConfig.class);
@@ -38,6 +32,11 @@ public class CorsConfig {
      */
     @Value("${app.cors.disabled:true}")
     private boolean corsDisabled;
+    /**
+     * Creates a new CorsConfig.
+     */
+    CorsConfig() {
+    }
 
     /**
      * Creates a CorsFilter bean to handle CORS requests.
