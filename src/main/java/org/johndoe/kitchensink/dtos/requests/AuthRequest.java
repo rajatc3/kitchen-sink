@@ -1,4 +1,4 @@
-package org.johndoe.kitchensink.dtos;
+package org.johndoe.kitchensink.dtos.requests;
 
 /**
  * AuthRequest is a record that holds the authentication request data.

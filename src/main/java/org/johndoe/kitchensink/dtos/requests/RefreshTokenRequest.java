@@ -1,5 +1,4 @@
-package org.johndoe.kitchensink.dtos;
-
+package org.johndoe.kitchensink.dtos.requests;
 
 /**
  * RefreshTokenRequest is a record that holds the refresh token request data.

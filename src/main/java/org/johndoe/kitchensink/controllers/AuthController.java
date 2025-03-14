@@ -1,7 +1,11 @@
 package org.johndoe.kitchensink.controllers;
 
 import jakarta.validation.Valid;
-import org.johndoe.kitchensink.dtos.*;
+import org.johndoe.kitchensink.dtos.MemberDto;
+import org.johndoe.kitchensink.dtos.requests.AuthRequest;
+import org.johndoe.kitchensink.dtos.requests.AuthResponse;
+import org.johndoe.kitchensink.dtos.requests.RefreshTokenRequest;
+import org.johndoe.kitchensink.dtos.requests.RefreshTokenResponse;
 import org.johndoe.kitchensink.services.KeycloakAuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -29,7 +29,7 @@ const Profile = () => {
 
    const fetchData = async () => {
       try {
-         const profileData = await fetchProfile(userId, token);
+         const profileData = await fetchProfile(token);
          if (profileData.error) {
             setError(profileData.error);
          } else {
@@ -72,7 +72,7 @@ const Profile = () => {
       const updatePayload = { ...formData };
       if (showPasswordField && newPassword.trim()) updatePayload.password = newPassword;
 
-      const result = await updateProfile(userId, token, updatePayload);
+      const result = await updateProfile(token, updatePayload);
 
       if (result.error) {
          setError("Failed to update profile. Reverting changes...");

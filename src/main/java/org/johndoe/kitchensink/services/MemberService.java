@@ -117,6 +117,15 @@ public class MemberService {
     }
 
     /**
+     * Finds all members as entities.
+     *
+     * @return the list of member entities
+     */
+    public List<Member> findAllMembersAsEntity() {
+        return memberRepository.findAll();
+    }
+
+    /**
      * Finds a member by their email.
      *
      * @param email the email
@@ -177,6 +186,32 @@ public class MemberService {
     }
 
     /**
+     * Updates a member.
+     *
+     * @param username the username of the member
+     * @param member   the member DTO
+     * @return the updated member DTO
+     * @throws UserNotFoundException if the member is not found
+     */
+    public MemberDto updateMember(String username, MemberDto member) {
+
+        Optional<Member> existingMember = memberRepository.findRecordsWithConflictingEmailOrPhoneNumber(member.getEmail(), member.getPhoneNumber(), member.getUsername());
+
+        if (existingMember.isPresent()) {
+            throw new ValidationException("email or phone number already tagged to another user");
+        }
+
+        Member memberEntity = memberRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(MEMBER_NOT_FOUND));
+
+        if (member.getFirstName() != null) memberEntity.setFirstName(member.getFirstName());
+        if (member.getLastName() != null) memberEntity.setLastName(member.getLastName());
+        if (member.getEmail() != null) memberEntity.setEmail(member.getEmail());
+        if (member.getPhoneNumber() != null) memberEntity.setPhoneNumber(member.getPhoneNumber());
+
+        return fromEntity(memberRepository.save(memberEntity));
+    }
+
+    /**
      * Deletes a member by their ID.
      *
      * @param id the member ID
@@ -216,5 +251,14 @@ public class MemberService {
      */
     public Long findMemberIdByEmailOrUsername(String identifier) {
         return memberRepository.findByEmailOrUsername(identifier).orElseThrow(() -> new RuntimeException(MEMBER_NOT_FOUND)).getMemberId();
+    }
+
+    /**
+     * Counts the number of users.
+     *
+     * @return the number of users
+     */
+    public Long countUsers() {
+        return memberRepository.count();
     }
 }

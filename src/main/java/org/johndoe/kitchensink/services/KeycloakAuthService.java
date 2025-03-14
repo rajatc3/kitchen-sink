@@ -1,7 +1,11 @@
 package org.johndoe.kitchensink.services;
 
 import lombok.Data;
-import org.johndoe.kitchensink.dtos.*;
+import org.johndoe.kitchensink.dtos.MemberDto;
+import org.johndoe.kitchensink.dtos.requests.AuthRequest;
+import org.johndoe.kitchensink.dtos.requests.AuthResponse;
+import org.johndoe.kitchensink.dtos.requests.KeycloakTokenResponse;
+import org.johndoe.kitchensink.dtos.requests.RefreshTokenResponse;
 import org.johndoe.kitchensink.exceptions.ApplicationException;
 import org.johndoe.kitchensink.security.config.JwtAuthConverter;
 import org.johndoe.kitchensink.utils.ApplicationConstants;
@@ -13,7 +17,6 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

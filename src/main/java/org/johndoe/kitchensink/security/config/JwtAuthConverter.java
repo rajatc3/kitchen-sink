@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -65,5 +66,19 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
      */
     public String getRoleFromJWT(String jwtString) {
         return convert(jwtDecoder.decode(jwtString)).getAuthorities().toString();
+    }
+
+    /**
+     * Extracts the username from a Principal object.
+     *
+     * @param principal the Principal object
+     * @return the username from the Principal
+     */
+    public static String getUsernameFromPrincipal(Principal principal) {
+        if (principal instanceof JwtAuthenticationToken jwtToken) {
+            Map<String, Object> claims = jwtToken.getToken().getClaims();
+            return (String) claims.get("preferred_username");
+        }
+        return null;
     }
 }

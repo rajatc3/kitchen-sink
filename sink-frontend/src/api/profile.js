@@ -2,9 +2,9 @@ import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
 
-export const fetchProfile = async (userId, token) => {
+export const fetchProfile = async (token) => {
    try {
-      const response = await fetch(`${API_BASE_URL}/dashboard/profile/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/dashboard/profile`, {
          method: "GET",
          headers: {
             "Authorization": `Bearer ${token}`,
@@ -20,9 +20,9 @@ export const fetchProfile = async (userId, token) => {
    }
 };
 
-export const updateProfile = async (userId, token, updatePayload) => {
+export const updateProfile = async (token, updatePayload) => {
    try {
-      const response = await fetch(`${API_BASE_URL}/dashboard/profile/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/dashboard/profile`, {
          method: "PUT",
          headers: {
             "Authorization": `Bearer ${token}`,

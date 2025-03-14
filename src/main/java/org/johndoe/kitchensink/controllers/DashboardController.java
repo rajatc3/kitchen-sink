@@ -2,9 +2,13 @@ package org.johndoe.kitchensink.controllers;
 
 import lombok.AllArgsConstructor;
 import org.johndoe.kitchensink.dtos.MemberDto;
+import org.johndoe.kitchensink.security.config.JwtAuthConverter;
 import org.johndoe.kitchensink.services.KeycloakAuthService;
 import org.johndoe.kitchensink.services.MemberService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 /**
  * Controller class for managing the dashboard.
@@ -12,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/dashboard")
 @AllArgsConstructor
+@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 public class DashboardController {
 
     /**
@@ -30,9 +35,9 @@ public class DashboardController {
      * @param id the user ID
      * @return the user profile
      */
-    @GetMapping("/profile/{id}")
-    public MemberDto getUserProfile(@PathVariable("id") Long id) {
-        return service.findMemberById(id);
+    @GetMapping("/profile")
+    public MemberDto getUserProfile(Principal principal) {
+        return service.findMemberByName(JwtAuthConverter.getUsernameFromPrincipal(principal));
     }
 
     /**
@@ -42,9 +47,9 @@ public class DashboardController {
      * @param memberDto the updated user profile
      * @return the updated user profile
      */
-    @PutMapping("/profile/{id}")
-    public MemberDto updateUserProfile(@PathVariable("id") Long id, @RequestBody MemberDto memberDto) {
+    @PutMapping("/profile")
+    public MemberDto updateUserProfile(Principal principal, @RequestBody MemberDto memberDto) {
         keycloakAuthService.updateUserInKeycloak(memberDto);
-        return service.updateMember(id, memberDto);
+        return service.updateMember(JwtAuthConverter.getUsernameFromPrincipal(principal), memberDto);
     }
 }

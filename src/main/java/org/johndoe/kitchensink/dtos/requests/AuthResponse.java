@@ -1,4 +1,4 @@
-package org.johndoe.kitchensink.dtos;
+package org.johndoe.kitchensink.dtos.requests;
 
 /**
  * AuthResponse is a record that holds the authentication response data.
