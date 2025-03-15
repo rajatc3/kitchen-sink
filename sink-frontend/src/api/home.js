@@ -42,3 +42,27 @@ export const addComment = async (token, postId, commentData) => {
     throw error.response?.data || "Failed to add comment";
   }
 };
+
+export const deletePost = async (token, postId) => {
+  try {
+    await axios.delete(`${API_BASE_URL}/posts/${postId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    throw error.response?.data || "Failed to delete post";
+  }
+};
+
+export const deleteComment = async (token, commentId) => {
+  try {
+    await axios.delete(`${API_BASE_URL}/comments/${commentId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    throw error.response?.data || "Failed to delete comment";
+  }
+};

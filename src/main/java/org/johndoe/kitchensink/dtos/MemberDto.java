@@ -10,6 +10,7 @@ import org.johndoe.kitchensink.annotations.NotBlankCharArray;
 import org.johndoe.kitchensink.annotations.UniqueInDatabase;
 import org.johndoe.kitchensink.annotations.UniqueUsername;
 import org.johndoe.kitchensink.documents.Member;
+import org.johndoe.kitchensink.utils.UtilityMethods;
 
 /**
  * Data Transfer Object for Member.
@@ -175,9 +176,19 @@ public class MemberDto {
          * @return the converted MemberDto
          */
         public static MemberDto fromEntity(Member member) {
+            return fromEntity(member, false);
+        }
+
+        public static MemberDto fromEntity(Member member , boolean isMasked) {
             if (member == null) {
                 return null;
             }
+
+            if(isMasked) {
+                member.setEmail(UtilityMethods.maskEmail(member.getEmail()));
+                member.setPhoneNumber(UtilityMethods.maskPhone(member.getPhoneNumber()));
+            }
+
             return new MemberDto(
                     member.getMemberId(),
                     member.getUsername(),

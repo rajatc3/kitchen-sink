@@ -26,15 +26,15 @@ public class PostDto {
     @NotBlank(message = "Content cannot be empty")
     private String content;
 
-    private Long memberId;
+    private MemberDto member;
     private LocalDateTime createdAt;
     private List<CommentDto> comments; // Now storing full CommentDto instead of IDs
 
-    public PostDto(String id, String title, String content, Long memberId, LocalDateTime createdAt, List<CommentDto> comments) {
+    public PostDto(String id, String title, String content, Member member, LocalDateTime createdAt, List<CommentDto> comments) {
         this.id = id;
         this.title = title;
         this.content = content;
-        this.memberId = memberId;
+        this.member = MemberDto.Mapper.fromEntity(member, true);
         this.createdAt = createdAt;
         this.comments = comments;
     }
@@ -44,11 +44,11 @@ public class PostDto {
      */
     public static class Mapper {
 
-        public static Post toEntity(PostDto dto, Member author, List<Comment> comments) {
+        public static Post toEntity(PostDto dto, Member member, List<Comment> comments) {
             if (dto == null) {
                 return null;
             }
-            return new Post(dto.getId(), author, dto.getTitle(), dto.getContent(), comments.stream().map(Comment::getId).collect(Collectors.toList()));
+            return new Post(dto.getId(), member, dto.getTitle(), dto.getContent(), comments.stream().map(Comment::getId).collect(Collectors.toList()));
         }
 
         public static PostDto fromEntity(Post post, List<Comment> comments) {
@@ -60,7 +60,7 @@ public class PostDto {
                     post.getId(),
                     post.getTitle(),
                     post.getContent(),
-                    post.getAuthor().getMemberId(),
+                    post.getMember(),
                     post.getCreatedAt(),
                     commentDtos
             );

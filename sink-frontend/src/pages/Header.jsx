@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const Header = ({ userEmail, userRole }) => {
+const Header = () => {
    const navigate = useNavigate();
    const location = useLocation();
    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
    const dropdownRef = useRef(null);
-
-   // Close dropdown if user clicks outside
+   const userFullName = localStorage.getItem("firstName") +" "+ localStorage.getItem("lastName");
+   const userRole = localStorage.getItem("userRole").toUpperCase();
+   
    useEffect(() => {
       const handleClickOutside = (event) => {
          if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -29,7 +30,7 @@ const Header = ({ userEmail, userRole }) => {
          <div className="flex items-center space-x-16 flex-1">
             <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">Kitchen Sink</h1>
             <nav className="flex space-x-8 text-lg font-semibold">
-               <NavItem path="/home" currentPath={location.pathname}>Home</NavItem>
+               <NavItem path="/home" currentPath={location.pathname}>Community Hub</NavItem>
                {userRole === "ADMIN" && <NavItem path="/admin" currentPath={location.pathname}>Admin's Corner</NavItem>}
             </nav>
          </div>
@@ -41,7 +42,7 @@ const Header = ({ userEmail, userRole }) => {
                onMouseEnter={() => setIsDropdownOpen(true)}
                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-               <span className="text-white font-medium">{userEmail}</span>
+               <span className="text-white font-medium">{userFullName}</span>
             </div>
 
             {/* Dropdown Menu */}

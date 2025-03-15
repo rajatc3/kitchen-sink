@@ -112,7 +112,7 @@ const Profile = () => {
       <div className="min-h-screen flex flex-col items-center text-white p-6 bg-cover bg-center"
          style={{ backgroundImage: "url('https://images.alphacoders.com/114/thumb-1920-1146731.jpg')" }}>
 
-         <Header userEmail={userEmail} userRole={userRole} handleLogout={handleLogout} />
+         <Header />
 
          <div className="w-full max-w-3xl bg-white/10 backdrop-blur-lg p-8 rounded-xl shadow-lg border border-white/20 mt-20">
             <h2 className="text-3xl font-bold text-center mb-6">Your Profile</h2>

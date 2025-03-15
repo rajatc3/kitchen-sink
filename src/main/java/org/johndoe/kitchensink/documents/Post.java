@@ -27,8 +27,8 @@ public class Post extends BaseDocument {
      * The member who created the post.
      */
     @DBRef
-    @Field("author")
-    private Member author;
+    @Field("member")
+    private Member member;
 
     /**
      * The title of the post.
@@ -58,14 +58,14 @@ public class Post extends BaseDocument {
      * Constructs a Post with the given attributes.
      *
      * @param postId     the unique identifier for the post
-     * @param author     the member who created the post
+     * @param member     the member who created the post
      * @param title      the title of the post
      * @param content    the content of the post
      * @param commentIds the list of comment IDs
      */
-    public Post(String postId, Member author, String title, String content, List<String> commentIds) {
+    public Post(String postId, Member member, String title, String content, List<String> commentIds) {
         this.postId = postId;
-        this.author = author;
+        this.member = member;
         this.title = title;
         this.content = content;
         this.commentIds = commentIds;

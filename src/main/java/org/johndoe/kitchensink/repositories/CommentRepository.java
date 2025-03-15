@@ -24,18 +24,18 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
     /**
      * Finds all comments made by a specific user.
      *
-     * @param author the comment author (Member)
+     * @param member the comment member (Member)
      * @return a list of comments
      */
-    List<Comment> findByAuthor(Member author);
+    List<Comment> findByMember(Member member);
 
     /**
      * Counts the number of comments made by a user.
      *
-     * @param author the comment author (Member)
+     * @param member the comment member (Member)
      * @return the number of comments
      */
-    long countByAuthor(Member author);
+    long countByMember(Member member);
 
     /**
      * Counts the number of comments on a post.

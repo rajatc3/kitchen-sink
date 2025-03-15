@@ -15,12 +15,12 @@ import java.util.List;
 public interface PostRepository extends MongoRepository<Post, String> {
 
     /**
-     * Finds all posts by a specific author.
+     * Finds all posts by a specific member.
      *
-     * @param author the author (Member)
+     * @param member the member (Member)
      * @return a list of posts
      */
-    List<Post> findByAuthor(Member author);
+    List<Post> findByMember(Member member);
 
     /**
      * Finds posts containing a keyword in the title.
@@ -33,9 +33,9 @@ public interface PostRepository extends MongoRepository<Post, String> {
     /**
      * Counts the number of posts made by a user.
      *
-     * @param author the author (Member)
+     * @param member the member (Member)
      * @return the number of posts
      */
-    @Query(value = "{ 'author.memberId' : ?0 }", count = true)
-    long countByAuthor(Long authorId);
+    @Query(value = "{ 'member.memberId' : ?0 }", count = true)
+    long countByAuthor(Long memberId);
 }

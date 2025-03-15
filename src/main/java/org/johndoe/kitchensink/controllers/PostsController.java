@@ -29,7 +29,7 @@ public class PostsController {
 
     @PostMapping
     public ResponseEntity<PostDto> createPost(PostDto postDto) {
-        return ResponseEntity.ok(postService.createPost(postDto.getMemberId(), postDto.getTitle(), postDto.getContent()));
+        return ResponseEntity.ok(postService.createPost(postDto.getMember().getMemberId(), postDto.getTitle(), postDto.getContent()));
     }
 
 }

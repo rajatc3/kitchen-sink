@@ -119,13 +119,13 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void generateDummyPostsAndComments(MemberDto member) {
-        Member author = memberRepository.findByUsername(member.getUsername()).orElseThrow(
+        Member memberEntity = memberRepository.findByUsername(member.getUsername()).orElseThrow(
                 () -> new IllegalStateException("Member not found: " + member.getUsername()));
 
         // Creating dummy posts
         List<Post> posts = List.of(
-                new Post(null, author, "First Post by " + member.getUsername(), "This is a sample post content.", new ArrayList<>()),
-                new Post(null, author, "Another Post by " + member.getUsername(), "Exploring content creation.", new ArrayList<>())
+                new Post(null, memberEntity, "First Post by " + member.getUsername(), "This is a sample post content.", new ArrayList<>()),
+                new Post(null, memberEntity, "Another Post by " + member.getUsername(), "Exploring content creation.", new ArrayList<>())
         );
         postRepository.saveAll(posts);
 
@@ -142,8 +142,8 @@ public class DataSeeder implements CommandLineRunner {
         posts.forEach(post -> {
             // Creating dummy comments
             List<Comment> comments = List.of(
-                    new Comment(null, author, post.getPostId(), randomComments.get(random.nextInt(randomComments.size()))),
-                    new Comment(null, author, post.getPostId(), randomComments.get(random.nextInt(randomComments.size())))
+                    new Comment(null, memberEntity, post.getPostId(), randomComments.get(random.nextInt(randomComments.size()))),
+                    new Comment(null, memberEntity, post.getPostId(), randomComments.get(random.nextInt(randomComments.size())))
             );
             commentRepository.saveAll(comments);
 

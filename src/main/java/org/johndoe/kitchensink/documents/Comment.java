@@ -25,8 +25,8 @@ public class Comment extends BaseDocument {
      * The member who created the comment.
      */
     @DBRef
-    @Field("author")
-    private Member author;
+    @Field("member")
+    private Member member;
 
     /**
      * The ID of the post to which this comment belongs.
@@ -50,13 +50,13 @@ public class Comment extends BaseDocument {
      * Constructs a Comment with the given attributes.
      *
      * @param commentId the unique identifier for the comment
-     * @param author    the member who created the comment
+     * @param member    the member who created the comment
      * @param postId    the ID of the post to which this comment belongs
      * @param content   the content of the comment
      */
-    public Comment(String commentId, Member author, String postId, String content) {
+    public Comment(String commentId, Member member, String postId, String content) {
         this.commentId = commentId;
-        this.author = author;
+        this.member = member;
         this.postId = postId;
         this.content = content;
     }

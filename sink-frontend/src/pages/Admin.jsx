@@ -42,7 +42,7 @@ const Admin = () => {
             backgroundPosition: "center",
          }}>
 
-         <Header userEmail={userEmail} userRole={userRole} />
+         <Header />
 
          <div className="bg-gray-900 bg-opacity-80 min-h-screen flex flex-col items-center justify-center p-10">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">

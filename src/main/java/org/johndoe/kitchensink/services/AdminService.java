@@ -32,7 +32,7 @@ public class AdminService {
             Map<String, Object> memberData = new HashMap<>();
             memberData.put("username", member.getUsername());
 
-            List<Post> posts = postRepository.findByAuthor(member);
+            List<Post> posts = postRepository.findByMember(member);
             memberData.put("totalPosts", posts.size());
 
             List<Map<String, Object>> postStats = posts.stream().map(post -> {
@@ -58,7 +58,7 @@ public class AdminService {
             Map<String, Object> topPostData = new HashMap<>();
             topPostData.put("postTitle", post.getTitle());
             topPostData.put("postId", post.getPostId());
-            topPostData.put("author", post.getAuthor().getUsername());
+            topPostData.put("member", post.getMember().getUsername());
             topPostData.put("totalComments", topPostCommentCount);
             stats.put("topPost", topPostData);
         });

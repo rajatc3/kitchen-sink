@@ -22,14 +22,14 @@ public class CommentDto {
     @NotBlank(message = "Comment content cannot be empty")
     private String content;
 
-    private Long memberId; // Reference to Member
+    private MemberDto member; // Reference to Member
     private String postId; // Store only the post ID
     private LocalDateTime createdAt;
 
-    public CommentDto(String id, String content, Long memberId, String postId, LocalDateTime createdAt) {
+    public CommentDto(String id, String content, Member member, String postId, LocalDateTime createdAt) {
         this.id = id;
         this.content = content;
-        this.memberId = memberId;
+        this.member = MemberDto.Mapper.fromEntity(member, true);
         this.postId = postId;
         this.createdAt = createdAt;
     }
@@ -39,11 +39,11 @@ public class CommentDto {
      */
     public static class Mapper {
 
-        public static Comment toEntity(CommentDto dto, Member author) {
+        public static Comment toEntity(CommentDto dto, Member member) {
             if (dto == null) {
                 return null;
             }
-            return new Comment(dto.getId(), author, dto.getPostId(), dto.getContent());
+            return new Comment(dto.getId(), member, dto.getPostId(), dto.getContent());
         }
 
         public static CommentDto fromEntity(Comment comment) {
@@ -53,7 +53,7 @@ public class CommentDto {
             return new CommentDto(
                     comment.getId(),
                     comment.getContent(),
-                    comment.getAuthor().getMemberId(),
+                    comment.getMember(),
                     comment.getPostId(), // Fetch only post ID
                     comment.getCreatedAt()
             );
