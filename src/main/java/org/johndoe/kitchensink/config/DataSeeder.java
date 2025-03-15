@@ -1,7 +1,13 @@
 package org.johndoe.kitchensink.config;
 
+import lombok.AllArgsConstructor;
+import org.johndoe.kitchensink.documents.Comment;
+import org.johndoe.kitchensink.documents.Member;
+import org.johndoe.kitchensink.documents.Post;
 import org.johndoe.kitchensink.dtos.MemberDto;
+import org.johndoe.kitchensink.repositories.CommentRepository;
 import org.johndoe.kitchensink.repositories.MemberRepository;
+import org.johndoe.kitchensink.repositories.PostRepository;
 import org.johndoe.kitchensink.services.KeycloakAuthService;
 import org.johndoe.kitchensink.utils.ApplicationConstants;
 import org.slf4j.Logger;
@@ -10,7 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * Component responsible for seeding member data into the database.
@@ -35,20 +44,35 @@ public class DataSeeder implements CommandLineRunner {
     private final KeycloakAuthService keycloakAuthService;
 
     /**
+     * Repository for post data.
+     */
+    private final PostRepository postRepository;
+
+    /**
+     * Repository for comment data.
+     */
+    private final CommentRepository commentRepository;
+
+    /**
      * Flag to indicate if the database should be refreshed.
      */
-    @Value("${app.refresh.database}")
+    @Value("${app.refresh.database:true}")
     private boolean refreshDatabase;
 
     /**
-     * Constructor for er.
+     * Constructs a new DataSeeder with the given repositories and service.
      *
      * @param memberRepository    the member repository
-     * @param keycloakAuthService the keycloak auth service
+     * @param keycloakAuthService  the KeycloakAuthService
+     * @param postRepository      the post repository
+     * @param commentRepository   the comment repository
      */
-    public DataSeeder(MemberRepository memberRepository, KeycloakAuthService keycloakAuthService) {
+    public DataSeeder(MemberRepository memberRepository, KeycloakAuthService keycloakAuthService,
+                      PostRepository postRepository, CommentRepository commentRepository) {
         this.memberRepository = memberRepository;
         this.keycloakAuthService = keycloakAuthService;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
     }
 
     /**
@@ -74,6 +98,8 @@ public class DataSeeder implements CommandLineRunner {
         if (refreshDatabase) {
             log.warn("Refreshing database as per user configuration. Deleting all members.");
             memberRepository.deleteAll();
+            postRepository.deleteAll();
+            commentRepository.deleteAll();
         }
 
         List<MemberDto> memberDto = List.of(
@@ -87,7 +113,45 @@ public class DataSeeder implements CommandLineRunner {
                         () -> {
                             log.info("Inserting member: {}", member.getUsername());
                             keycloakAuthService.register(member);
+                            generateDummyPostsAndComments(member);
                         }
                 ));
+    }
+
+    private void generateDummyPostsAndComments(MemberDto member) {
+        Member author = memberRepository.findByUsername(member.getUsername()).orElseThrow(
+                () -> new IllegalStateException("Member not found: " + member.getUsername()));
+
+        // Creating dummy posts
+        List<Post> posts = List.of(
+                new Post(null, author, "First Post by " + member.getUsername(), "This is a sample post content.", new ArrayList<>()),
+                new Post(null, author, "Another Post by " + member.getUsername(), "Exploring content creation.", new ArrayList<>())
+        );
+        postRepository.saveAll(posts);
+
+        Random random = new Random();
+        List<String> randomComments = List.of(
+                "This is a great post!",
+                "Thanks for sharing your thoughts.",
+                "Very insightful!",
+                "I totally agree!",
+                "Could you elaborate more on this?",
+                "Interesting perspective!"
+        );
+
+        posts.forEach(post -> {
+            // Creating dummy comments
+            List<Comment> comments = List.of(
+                    new Comment(null, author, post.getPostId(), randomComments.get(random.nextInt(randomComments.size()))),
+                    new Comment(null, author, post.getPostId(), randomComments.get(random.nextInt(randomComments.size())))
+            );
+            commentRepository.saveAll(comments);
+
+            // Attach comment IDs to the post and update
+            post.setCommentIds(comments.stream().map(Comment::getCommentId).collect(Collectors.toList()));
+            postRepository.save(post);
+        });
+
+        log.info("Generated dummy posts and comments for user: {}", member.getUsername());
     }
 }

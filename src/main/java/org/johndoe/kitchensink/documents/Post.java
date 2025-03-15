@@ -43,11 +43,10 @@ public class Post extends BaseDocument {
     private String content;
 
     /**
-     * The list of comments associated with this post.
+     * The list of comment IDs associated with this post.
      */
-    @DBRef
-    @Field("comments")
-    private List<Comment> comments;
+    @Field("commentIds")
+    private List<String> commentIds; // Store only comment IDs
 
     /**
      * Default constructor for Post.
@@ -58,16 +57,18 @@ public class Post extends BaseDocument {
     /**
      * Constructs a Post with the given attributes.
      *
-     * @param postId  the unique identifier for the post
-     * @param author  the member who created the post
-     * @param title   the title of the post
-     * @param content the content of the post
+     * @param postId     the unique identifier for the post
+     * @param author     the member who created the post
+     * @param title      the title of the post
+     * @param content    the content of the post
+     * @param commentIds the list of comment IDs
      */
-    public Post(String postId, Member author, String title, String content) {
+    public Post(String postId, Member author, String title, String content, List<String> commentIds) {
         this.postId = postId;
         this.author = author;
         this.title = title;
         this.content = content;
+        this.commentIds = commentIds;
     }
 
     public String getId() {

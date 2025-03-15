@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.johndoe.kitchensink.documents.Comment;
 import org.johndoe.kitchensink.documents.Member;
-import org.johndoe.kitchensink.documents.Post;
 
 import java.time.LocalDateTime;
 
@@ -24,7 +23,7 @@ public class CommentDto {
     private String content;
 
     private Long memberId; // Reference to Member
-    private String postId; // Reference to Post
+    private String postId; // Store only the post ID
     private LocalDateTime createdAt;
 
     public CommentDto(String id, String content, Long memberId, String postId, LocalDateTime createdAt) {
@@ -40,11 +39,11 @@ public class CommentDto {
      */
     public static class Mapper {
 
-        public static Comment toEntity(CommentDto dto, Member author, Post post) {
+        public static Comment toEntity(CommentDto dto, Member author) {
             if (dto == null) {
                 return null;
             }
-            return new Comment(dto.getId(), author, post, dto.getContent());
+            return new Comment(dto.getId(), author, dto.getPostId(), dto.getContent());
         }
 
         public static CommentDto fromEntity(Comment comment) {
@@ -55,9 +54,14 @@ public class CommentDto {
                     comment.getId(),
                     comment.getContent(),
                     comment.getAuthor().getMemberId(),
-                    comment.getPost().getId(),
+                    comment.getPostId(), // Fetch only post ID
                     comment.getCreatedAt()
             );
+        }
+
+        public static CommentDto fromEntity(String id, String content, LocalDateTime createdAt) {
+            return new CommentDto(
+                    id, content, null, null, createdAt);
         }
     }
 }

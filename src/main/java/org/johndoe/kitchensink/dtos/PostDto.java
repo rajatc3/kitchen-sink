@@ -4,10 +4,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.johndoe.kitchensink.documents.Comment;
 import org.johndoe.kitchensink.documents.Member;
 import org.johndoe.kitchensink.documents.Post;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Data Transfer Object for Post.
@@ -25,13 +28,15 @@ public class PostDto {
 
     private Long memberId;
     private LocalDateTime createdAt;
+    private List<CommentDto> comments; // Now storing full CommentDto instead of IDs
 
-    public PostDto(String id, String title, String content, Long memberId, LocalDateTime createdAt) {
+    public PostDto(String id, String title, String content, Long memberId, LocalDateTime createdAt, List<CommentDto> comments) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.memberId = memberId;
         this.createdAt = createdAt;
+        this.comments = comments;
     }
 
     /**
@@ -39,23 +44,25 @@ public class PostDto {
      */
     public static class Mapper {
 
-        public static Post toEntity(PostDto dto, Member author) {
+        public static Post toEntity(PostDto dto, Member author, List<Comment> comments) {
             if (dto == null) {
                 return null;
             }
-            return new Post(dto.getId(), author, dto.getTitle(), dto.getContent());
+            return new Post(dto.getId(), author, dto.getTitle(), dto.getContent(), comments.stream().map(Comment::getId).collect(Collectors.toList()));
         }
 
-        public static PostDto fromEntity(Post post) {
+        public static PostDto fromEntity(Post post, List<Comment> comments) {
             if (post == null) {
                 return null;
             }
+            List<CommentDto> commentDtos = comments.stream().map(CommentDto.Mapper::fromEntity).collect(Collectors.toList());
             return new PostDto(
                     post.getId(),
                     post.getTitle(),
                     post.getContent(),
                     post.getAuthor().getMemberId(),
-                    post.getCreatedAt()
+                    post.getCreatedAt(),
+                    commentDtos
             );
         }
     }

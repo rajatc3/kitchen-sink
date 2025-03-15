@@ -2,7 +2,6 @@ package org.johndoe.kitchensink.repositories;
 
 import org.johndoe.kitchensink.documents.Comment;
 import org.johndoe.kitchensink.documents.Member;
-import org.johndoe.kitchensink.documents.Post;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,10 +16,10 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
     /**
      * Finds all comments on a specific post.
      *
-     * @param post the post
+     * @param postId the ID of the post
      * @return a list of comments
      */
-    List<Comment> findByPost(Post post);
+    List<Comment> findByPostId(String postId);
 
     /**
      * Finds all comments made by a specific user.
@@ -41,8 +40,8 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
     /**
      * Counts the number of comments on a post.
      *
-     * @param post the post
+     * @param postId the ID of the post
      * @return the number of comments
      */
-    int countByPost(Post post);
+    int countByPostId(String postId);
 }

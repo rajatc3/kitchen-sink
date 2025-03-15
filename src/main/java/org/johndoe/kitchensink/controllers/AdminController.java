@@ -13,12 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.johndoe.kitchensink.utils.UtilityMethods.maskEmail;
-import static org.johndoe.kitchensink.utils.UtilityMethods.maskPhone;
 
 @PreAuthorize("hasRole('ADMIN')")
 @RestController
@@ -73,6 +68,6 @@ public class AdminController {
      */
     @GetMapping("/analytics")
     public ResponseEntity<Map<String, Object>> getAnalytics() {
-        return ResponseEntity.ok(adminService.getUserStats());
+        return ResponseEntity.ok(adminService.getAnalytics());
     }
 }

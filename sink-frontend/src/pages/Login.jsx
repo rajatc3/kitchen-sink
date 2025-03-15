@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { login } from "../api/auth";
+import { fetchProfile } from "../api/profile";
 import { useNavigate, Link } from "react-router-dom";
 
 const Login = () => {
@@ -46,12 +47,18 @@ const Login = () => {
       try {
          const data = await login(identifier, password);
          const userRole = data.role.includes("ROLE_ADMIN") ? "Admin" : "User";
-
+         
          localStorage.setItem("accessToken", data.accessToken);
          localStorage.setItem("refreshToken", data.refreshToken);
-         localStorage.setItem("userEmail", identifier);
-         localStorage.setItem("memberId", data.memberId)
+
+         const profileData = await fetchProfile(data.accessToken);
+         localStorage.setItem("userEmail", profileData.email);
+         localStorage.setItem("firstName", profileData.firstName);
+         localStorage.setItem("lastName", profileData.lastName);
+         localStorage.setItem("phoneNumber", profileData.phoneNumber);
+         localStorage.setItem("memberId", profileData.memberId)
          localStorage.setItem("userRole", userRole);
+
          navigate("/home"); 
       } catch (err) {
          setError(err.message || "Invalid credentials");

@@ -29,11 +29,10 @@ public class Comment extends BaseDocument {
     private Member author;
 
     /**
-     * The post to which this comment belongs.
+     * The ID of the post to which this comment belongs.
      */
-    @DBRef
-    @Field("post")
-    private Post post;
+    @Field("postId")
+    private String postId; // Store only the post ID
 
     /**
      * The content of the comment.
@@ -52,13 +51,13 @@ public class Comment extends BaseDocument {
      *
      * @param commentId the unique identifier for the comment
      * @param author    the member who created the comment
-     * @param post      the post to which this comment belongs
+     * @param postId    the ID of the post to which this comment belongs
      * @param content   the content of the comment
      */
-    public Comment(String commentId, Member author, Post post, String content) {
+    public Comment(String commentId, Member author, String postId, String content) {
         this.commentId = commentId;
         this.author = author;
-        this.post = post;
+        this.postId = postId;
         this.content = content;
     }
 

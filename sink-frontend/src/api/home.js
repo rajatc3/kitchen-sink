@@ -2,22 +2,22 @@ import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
 
-export const fetchMembers = async (token) => {
+export const fetchPosts = async (token) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/members`, {
+    const response = await axios.get(`${API_BASE_URL}/posts`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
     return response.data;
   } catch (error) {
-    throw error.response?.data || "Failed to fetch members";
+    throw error.response?.data || "Failed to fetch posts";
   }
 };
 
-export const addMember = async (token, memberData) => {
+export const createPost = async (token, postData) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/members`, memberData, {
+    const response = await axios.post(`${API_BASE_URL}/posts`, postData, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -25,39 +25,20 @@ export const addMember = async (token, memberData) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response?.data || "Failed to add member";
+    throw error.response?.data || "Failed to create post";
   }
 };
 
-export const updateMember = async (token, memberId, updateData) => {
-   try {
-     const response = await axios.put(`${API_BASE_URL}/members/${memberId}`, updateData, {
-       headers: {
-         Authorization: `Bearer ${token}`,
-         "Content-Type": "application/json",
-       },
-     });
-     return response.data;
-   } catch (error) {
-     if (error.response?.status === 400 && error.response?.data?.errors) {
-       throw {
-         errors: error.response.data.errors,
-         status: error.response.data.status,
-         timestamp: error.response.data.timestamp,
-       };
-     }
-     throw error.response?.data || "Failed to update member";
-   }
- };
-
-export const deleteMember = async (token, memberId) => {
+export const addComment = async (token, postId, commentData) => {
   try {
-    await axios.delete(`${API_BASE_URL}/members/${memberId}`, {
+    const response = await axios.post(`${API_BASE_URL}/posts/${postId}/comments`, commentData, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
+    return response.data;
   } catch (error) {
-    throw error.response?.data || "Failed to delete member";
+    throw error.response?.data || "Failed to add comment";
   }
 };
