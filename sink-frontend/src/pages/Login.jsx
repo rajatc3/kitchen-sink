@@ -52,7 +52,7 @@ const Login = () => {
          localStorage.setItem("userEmail", identifier);
          localStorage.setItem("memberId", data.memberId)
          localStorage.setItem("userRole", userRole);
-         navigate("/members"); 
+         navigate("/home"); 
       } catch (err) {
          setError(err.message || "Invalid credentials");
       }

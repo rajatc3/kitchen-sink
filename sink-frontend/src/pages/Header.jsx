@@ -29,8 +29,8 @@ const Header = ({ userEmail, userRole }) => {
          <div className="flex items-center space-x-16 flex-1">
             <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">Kitchen Sink</h1>
             <nav className="flex space-x-8 text-lg font-semibold">
-               <NavItem path="/members" currentPath={location.pathname}>Home</NavItem>
-               {userRole === "ADMIN" && <NavItem path="/admin" currentPath={location.pathname}>Admin Section</NavItem>}
+               <NavItem path="/home" currentPath={location.pathname}>Home</NavItem>
+               {userRole === "ADMIN" && <NavItem path="/admin" currentPath={location.pathname}>Admin's Corner</NavItem>}
             </nav>
          </div>
 

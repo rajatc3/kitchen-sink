@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import Login from "./pages/Login";
-import Members from "./pages/Members";
+import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Profile from "./pages/Profiles";
 import Admin from "./pages/Admin";
@@ -26,7 +26,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/members" element={<Members />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<Admin />} />
