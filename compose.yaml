@@ -1,0 +1,70 @@
+version: '3.8'
+
+networks:
+  kitchen-sink-net:
+    driver: bridge
+
+services:
+  mongodb:
+    image: 'mongo:latest'
+    environment:
+      MONGO_INITDB_DATABASE: kitchensink-db
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    ports:
+      - '27017:27017'
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 2s
+      retries: 10
+    networks:
+      - kitchen-sink-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.1
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+    volumes:
+      - ./keycloak-realm.json:/opt/keycloak/data/import/realm.json
+    command: [ "start-dev", "--import-realm" ]
+    ports:
+      - '8082:8080'
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "/opt/keycloak/bin/kc.sh show-config" ]
+      interval: 10s
+      retries: 10
+    networks:
+      - kitchen-sink-net
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    environment:
+      SPRING_DATA_MONGODB_URI:  mongodb://root:secret@mongodb:27017/kitchensink-db?authSource=admin
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/kitchensink/protocol/openid-connect/certs
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/kitchensink
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+    ports:
+      - '8080:8080'
+    networks:
+      - kitchen-sink-net
+
+  frontend:
+    build:
+      context: ./sink-frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:8080/api
+    ports:
+      - '80:80'
+    networks:
+      - kitchen-sink-net
