@@ -1,7 +1,5 @@
 # Kitchensink - The Dumping Platform
 
-This project is a modernized approach of the [JBoss EAP Quickstarts Kitchensink](https://github.com/jboss-developer/jboss-eap-quickstarts/tree/8.0.x/kitchensink).
-
 ## Prerequisites
 
 Ensure you have the following installed on your system:
