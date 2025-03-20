@@ -1,5 +1,7 @@
 # Kitchensink - The Dumping Platform
 
+### Demo Video : https://youtu.be/vwSqzvyHdxo
+
 ## Prerequisites
 
 Ensure you have the following installed on your system:
